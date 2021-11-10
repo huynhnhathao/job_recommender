@@ -13,6 +13,6 @@ class CompaniesSpider(scrapy.Spider):
 
         next_page = response.xpath("//a[@class='more-jobs-link more-company']/@href").get()
         if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
+            next_page = response.urljoin(next_page)
+            yield scrapy.Request(next_page, callback = self.parse)
 
-            
