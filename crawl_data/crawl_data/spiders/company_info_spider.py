@@ -24,12 +24,12 @@ class CompanyInfoSpider(scrapy.Spider):
         all_job: str: links to all the job posted by the company
     """
 
-    name = 'company_info'
-    start_url = []
+    name = 'companies_info'
+    start_urls = []
     with open('/home/azureuser/cloudfiles/code/Users/job_recommender/crawl_data/companies_url.jl', 'r') as f:
         for line in f:
-            start_url.append(json.loads(line))
-
+            url = list(json.loads(line).values())[0]
+            start_urls.append(url)
 
     def parse(self, response):
         company_info = {}
@@ -58,13 +58,12 @@ class CompanyInfoSpider(scrapy.Spider):
             link = selector.xpath("@href").get()
             jobs[job_title] = response.urljoin(link)
 
+        company_info['jobs'] = jobs
+
+        yield company_info
+
         
 
 
                         
         
-                            
-                    
-
-   
-
