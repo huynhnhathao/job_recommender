@@ -23,7 +23,7 @@ class JobSpider(scrapy.Spider):
     def start_requests(self, ):
         
         company_jobs = {}
-        file_path = r'C:\Users\ASUS\Desktop\job_recommender\crawl_data\companies_info.jl'
+        file_path = '/home/huynhhao/Desktop/job_recommender/crawl_data/companies_info.jl'
         with open(file_path, 'r', encoding = 'utf-8') as f:
             for line in f:
                 company_info = json.loads(line)
