@@ -1,2 +1,4 @@
-# job_recommender
-A Job Recommender System using Graph-based data representation and Hybrid recommender system algorithm.
+# A Graph-based Hybrid Job Recommender
+
+My implementation of [A Recommender System for Job Seeking and Recruiting Website](http://www2013.w3c.br/companion/p963.pdf) using scrapy, networkx, streamlit.
+
