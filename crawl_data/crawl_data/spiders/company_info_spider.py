@@ -33,7 +33,7 @@ class CompanyInfoSpider(scrapy.Spider):
     name = 'companies_info'
 
     start_urls = []
-    with open('/home/azureuser/cloudfiles/code/Users/job_recommender/crawl_data/companies_url.jl', 'r') as f:
+    with open(r'C:\Users\ASUS\Desktop\job_recommender\crawl_data\companies_url.jl', 'r') as f:
         for line in f:
             url = json.loads(line)['url']
             start_urls.append(url)

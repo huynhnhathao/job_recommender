@@ -23,15 +23,15 @@ class JobSpider(scrapy.Spider):
     def start_requests(self, ):
         
         company_jobs = {}
-        file_path = '/home/azureuser/cloudfiles/code/Users/job_recommender/crawl_data/companies_info.jl'
-        with open(file_path, 'r') as f:
+        file_path = r'C:\Users\ASUS\Desktop\job_recommender\crawl_data\companies_info.jl'
+        with open(file_path, 'r', encoding = 'utf-8') as f:
             for line in f:
                 company_info = json.loads(line)
                 if company_info['company_name']:
                     company_jobs[company_info['company_name']] = company_info['jobs']
 
         for company_name, jobs in company_jobs.items():
-            for job_name, job_url in jobs:
+            for job_name, job_url in jobs.items():
                 yield scrapy.Request(job_url,
                     cb_kwargs = {'company_name': company_name, 'job_name': job_name},
                     callback= self.parse)
@@ -45,7 +45,7 @@ class JobSpider(scrapy.Spider):
         job_info['location'] = response.xpath("//div[@class='job-details__overview']//div[@class='svg-icon__text']//span/text()").get()
         job_info['three_reasons'] = '\n'.join(response.xpath("//div[@class='job-details__top-reason-to-join-us']//li/text()").getall())
 
-        job_info['description'] = '\n'.join(response.xpath("//div[@class='job-details__paragraph']//li/*/text()").getall())
+        job_info['description'] = '\n'.join(response.xpath("//div[@class='job-details__paragraph']").getall())
         
         yield job_info
 
