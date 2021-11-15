@@ -1,7 +1,7 @@
 import scrapy
 import json
 
-
+# TODO: This spider does not get the "Why you'll love working here", fix it.
 class CompanyInfoSpider(scrapy.Spider):
     """
     This spider will loop over all the company link saved previously by the

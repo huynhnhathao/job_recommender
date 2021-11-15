@@ -13,7 +13,8 @@ nltk.download('wordnet')
 stop_words = set(stopwords.words("english"))
 
 
-def make_vocab(texts: str, num_vocab: Optional[int] = None, min_word_count: Optional[int] = None) -> None:
+def make_vocab(texts: str, num_vocab: Optional[int] = None,
+                min_word_count: Optional[int] = None) -> None:
     """Create a vocab mapping {term: index}}
     Args:
         texts: one string that contains all the text data
