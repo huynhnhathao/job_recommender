@@ -72,11 +72,11 @@ class NetworkBuilder:
         else:
             self.cv_data = cv_data
 
-        # Create a text comparer using latent_semantic_analysis
-        self.comparer = self.get_lsa()
-
         # Create the master jobs network
         self.G = self.create_network_from_data()
+
+        # Create a text comparer using latent_semantic_analysis
+        self.comparer = self.get_lsa() 
 
     def employers_dataframe_to_dict(self,
                         companies_df: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
@@ -192,6 +192,9 @@ class NetworkBuilder:
         """This method will extract all documents attribute of every node in G"""
         all_documents = []
         for _, node_data in self.G.nodes.items():
+            if not node_data:
+                print(_)
+                break
             if node_data['node_type'] == 'employer':
                 all_documents.append(' '.join([str(node_data['overview']), str(node_data['benifit']) ]))
             elif node_data['node_type'] == 'job':
@@ -210,6 +213,8 @@ class NetworkBuilder:
         all_documents = self.get_all_document_from_graph()
         all_texts = ' '.join(all_documents)
         logger.info('Creating vocab')
-        vocab = latent_semantic_analysis.make_vocab(all_texts, )
+        self.vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=30)
         logger.info('Vocab is created')
-        lsa = latent_semantic_analysis.LSA()
+        # lsa = latent_semantic_analysis.LSA()
+        # elaborate the vocab choosing process such that no number and no nonsense
+        #  word are chosen as vocabs 
