@@ -179,7 +179,7 @@ class NetworkBuilder:
             G.add_node(candidate_id, node_type = 'candidate', **candidate_data)
             G.graph['num_candidates'] += 1
         
-        logger.info('Master Graph building is completed.')
+        logger.info('Master Graph is built.')
         return G
 
     def add_relations_edges(self) -> None:
@@ -212,9 +212,11 @@ class NetworkBuilder:
         logger.info('Creating Comparer')
         all_documents = self.get_all_document_from_graph()
         all_texts = ' '.join(all_documents)
+
         logger.info('Creating vocab')
-        self.vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=30)
+        vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=10)
         logger.info('Vocab is created')
-        # lsa = latent_semantic_analysis.LSA()
+
+        lsa = latent_semantic_analysis.LSA(vocab)
         # elaborate the vocab choosing process such that no number and no nonsense
         #  word are chosen as vocabs 
