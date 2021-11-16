@@ -20,6 +20,10 @@ def is_ascii(s: str) -> bool:
     """Check if a string s only contains ascii chartecter"""
     return all(ord(c) < 128 for c in s)
 
+def contains_digit(text: str) -> bool:
+    """Check if a string contains a digit"""
+    return any(x.isdigit() for x in text)
+
 def make_vocab(texts: str, num_vocab: Optional[int] = None,
                 min_word_count: Optional[int] = None) -> None:
     """Create a vocab mapping {term: index}}
@@ -40,7 +44,7 @@ def make_vocab(texts: str, num_vocab: Optional[int] = None,
     texts = texts.split()
     # remove stopwords, digits, punctuations(again) and word that have non-ascii
     # character
-    texts = [x for x in texts if x not in stop_words and not x.isdigit() and x not in string.punctuation and is_ascii(x)]
+    texts = [x for x in texts if x not in stop_words and x not in string.punctuation and is_ascii(x) and not contains_digit(x)]
     # lemmatize words
     lemma = nltk.wordnet.WordNetLemmatizer()
     texts = [lemma.lemmatize(x) for x in texts]
@@ -96,7 +100,7 @@ class LSA:
         text = text.lower()
         text = text.translate(str.maketrans('', '', string.punctuation))
         text = text.split()
-        text = [x for x in text if x not in stop_words and not x.isdigit() and x not in string.punctuation and is_ascii(x)]
+        text = [x for x in text if x not in stop_words and x not in string.punctuation and is_ascii(x) and not contains_digit(x)]
         text = [self.lemmatizer.lemmatize(x) for x in text]
         # replace oov word with '_unknown_'
         text = [x if x in self.vocab.keys() else '_unknown_' for x in text ]
@@ -106,19 +110,21 @@ class LSA:
         """Preprocess all documents and fit the tf-idf vectorizer and the
         SVD features reducer
         """
-        logger.info('Fitting vectorizer and featurs reducer...')
+        logger.info('Fitting vectorizer and features reducer...')
         self.processed_documents = [self.preprocess_text(x) for x in self.documents]
         features_matrix = self.vectorizer.fit_transform(self.processed_documents)
         self.svd.fit(features_matrix)
 
         logger.info('Done.')
     
-    def compare_two_text(self, text1: str, text2: str, method: str= 'Cosine')-> float:
+    def compare_two_text(self, text1: str, text2: str,
+                        method: str= 'Cosine')-> float:
         """This method takes two text and perform preprocess, vectorizer, reduce
         features and compare two vector using the specified method
         This method will be used to compute the 'profile match' relation between
         a candidate and a job.
         """
+        pass
 
 
     def compute_linear_kernel_matrix(self, documents: List[str]) -> np.ndarray:
@@ -129,6 +135,7 @@ class LSA:
         This method will be used to compute the 'similar' relation between entities
         of the same type.
         """
+        pass
 
 
 

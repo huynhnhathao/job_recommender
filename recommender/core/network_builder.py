@@ -182,12 +182,6 @@ class NetworkBuilder:
         logger.info('Master Graph is built.')
         return G
 
-    def add_relations_edges(self) -> None:
-        """This method use Latent semantic analysis to compare different types
-        of nodes to infer the 'similar' relation between them and add those edges
-        to the network
-        """
-
     def get_all_document_from_graph(self) -> List[str]:
         """This method will extract all documents attribute of every node in G"""
         all_documents = []
@@ -206,17 +200,31 @@ class NetworkBuilder:
         
         return all_documents
 
-    def get_lsa(self,) -> Any:
+    def get_lsa(self,) -> latent_semantic_analysis.LSA:
         """Create a LSA object, which will be used to compare documents.
         """
         logger.info('Creating Comparer')
         all_documents = self.get_all_document_from_graph()
         all_texts = ' '.join(all_documents)
 
-        logger.info('Creating vocab')
         vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=10)
-        logger.info('Vocab is created')
 
-        lsa = latent_semantic_analysis.LSA(vocab)
-        # elaborate the vocab choosing process such that no number and no nonsense
-        #  word are chosen as vocabs 
+        self.lsa = latent_semantic_analysis.LSA(vocab, all_documents, 0.3)
+        self.lsa.do_work()
+        logger.info('Comparer created.')
+
+    def add_relations_edges(self) -> None:
+        """This method use Latent semantic analysis to compare different types
+        of nodes to infer the 'similar' relation between them and add those edges
+        to the network
+        First, for each type of entities, computes and infers the 'similar' relations
+        between them and add edges represent those relations.
+        Second, for each candidate, compute the 'profile match' relation between 
+        them and add edges represent those relation
+        """
+
+        pass
+
+
+
+
