@@ -68,13 +68,12 @@ def make_vocab(texts: str, num_vocab: Optional[int] = None,
 
 class LSA:
 
-    """This class's instance can represent text using latent semantic analysis
-    and compare two text using Cosine similarity.
-    """
-    
     def __init__(self, vocab: Dict[str, int], documents: List[str],
                 num_features: Union[int, float]) -> None:
         """
+        This class's instance can represent text using latent semantic analysis
+        and compare two text using Cosine similarity.
+        
         Args:
             vocab: a dictionary map from term to index
             documents: a list of all documents used to fit the tf-idf vectorizer

@@ -5,10 +5,11 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 
-from recommender.core import latent_semantic_analysis
+import latent_semantic_analysis
+import constants
 
 handler = logging.StreamHandler()
-formmater = logging.Formatter(r'%(asctime)s - %(message)s')
+formmater = logging.Formatter('%(asctime)s - %(message)s')
 handler.setFormatter(formmater)
 
 logger = logging.getLogger()
@@ -19,7 +20,7 @@ class NetworkBuilder:
     """This class build a network of jobs, employers and candidates.
 
     First, all the entities of three types will be added to one single network
-    as nodes. Each node has attribute type: str to tell which type is it.
+    as nodes. Each node has attribute `type`: str to tell which type it is.
 
     Then all the relations that can be extracted directly from data will be added
     to the networks as edges. Those relations include a company posted a job.
@@ -59,24 +60,34 @@ class NetworkBuilder:
         """
         if isinstance(employers_data, pd.DataFrame):
             self.employers_data = self.employers_dataframe_to_dict(employers_data)
+        elif isinstance(employers_data, str):
+            self.employers_data = pd.read_csv(employers_data)
+            self.employers_data = self.employers_dataframe_to_dict(self.employers_data)
         else:
-            self.employers_data = employers_data
+            raise ValueError('data should be a dataframe of a path to that dataframe')
 
         if isinstance(jobs_data, pd.DataFrame):
             self.jobs_data = self.jobs_dataframe_to_dict(jobs_data)
+        elif isinstance(jobs_data, str):
+
+            self.jobs_data = pd.read_csv(jobs_data)
+            self.jobs_data = self.jobs_dataframe_to_dict(self.jobs_data)
         else:
-            self.jobs_data = jobs_data
+            raise ValueError('data should be a dataframe of a path to that dataframe')
 
         if isinstance(cv_data, pd.DataFrame):
             self.cv_data = self.cv_dataframe_to_dict(cv_data)
+        elif isinstance(cv_data, str):
+            self.cv_data = pd.read_csv(cv_data)
+            self.cv_data = self.cv_dataframe_to_dict(self.cv_data)
         else:
-            self.cv_data = cv_data
+            raise ValueError('data should be a dataframe of a path to that dataframe')
 
         # Create the master jobs network
-        self.G = self.create_network_from_data()
+        self.G = None
 
         # Create a text comparer using latent_semantic_analysis
-        self.comparer = self.get_lsa() 
+        self.comparer = None
 
     def employers_dataframe_to_dict(self,
                         companies_df: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
@@ -143,7 +154,7 @@ class NetworkBuilder:
         Other types of edges that need to compare objects will be added in another
         method
         """
-        logger.info('Start building the master Graph...')
+        
         # graph counts and saves its nodes and edges types
         G = nx.MultiDiGraph(name = 'Jobs graph',
                             num_employers = 0, 
@@ -179,11 +190,13 @@ class NetworkBuilder:
             G.add_node(candidate_id, node_type = 'candidate', **candidate_data)
             G.graph['num_candidates'] += 1
         
-        logger.info('Master Graph is built.')
+        
         return G
 
     def get_all_document_from_graph(self) -> List[str]:
-        """This method will extract all documents attribute of every node in G"""
+        """This method will extract all documents attribute of every node in G,
+        used to construct the vocab for LSA
+        """
         all_documents = []
         for _, node_data in self.G.nodes.items():
             if not node_data:
@@ -203,13 +216,13 @@ class NetworkBuilder:
     def get_lsa(self,) -> latent_semantic_analysis.LSA:
         """Create a LSA object, which will be used to compare documents.
         """
-        logger.info('Creating Comparer')
+        
         all_documents = self.get_all_document_from_graph()
         all_texts = ' '.join(all_documents)
 
         vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=10)
 
-        self.lsa = latent_semantic_analysis.LSA(vocab, all_documents, 0.3)
+        self.lsa = latent_semantic_analysis.LSA(vocab, all_documents, constants.NUM_REDUCED_FEATURES)
         self.lsa.do_work()
         logger.info('Comparer created.')
 
@@ -224,6 +237,37 @@ class NetworkBuilder:
         """
 
         pass
+    
+
+    def build(self,) -> None:
+        """Build the network.
+        """
+
+        logger.info('Start building the master Graph...')
+        self.G = self.create_network_from_data()
+        logger.info('Master Graph is built.')
+
+        logger.info('Creating LSA comparer')
+        self.get_lsa() 
+        
+        logger.info('Adding relations edges...')
+        self.add_relations_edges()
+
+
+if __name__ == '__main__':
+
+
+    network = NetworkBuilder(constants.EMPLOYERS_DATA_PATH,
+                        constants.JOBs_DATA_PATH,
+                        constants.CV_DATAPATH)
+
+    network.build()
+
+
+
+        
+        
+
 
 
 
