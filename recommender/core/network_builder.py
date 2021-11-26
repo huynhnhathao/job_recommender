@@ -1,10 +1,19 @@
 from typing import Dict, List, Any
+import logging
 
 import numpy as np
 import pandas as pd
 import networkx as nx
 
-import latent_semantic_analysis
+from recommender.core import latent_semantic_analysis
+
+handler = logging.StreamHandler()
+formmater = logging.Formatter(r'%(asctime)s - %(message)s')
+handler.setFormatter(formmater)
+
+logger = logging.getLogger()
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 class NetworkBuilder:
     """This class build a network of jobs, employers and candidates.
@@ -45,6 +54,7 @@ class NetworkBuilder:
             employer_data: a dict map from employer/company unique id to its data
             job_data: a dict map from job's unique id to its data
             cv_data: CV of candidates in the network
+        All of those data are expected to be in English
 
         """
         if isinstance(employers_data, pd.DataFrame):
@@ -62,11 +72,11 @@ class NetworkBuilder:
         else:
             self.cv_data = cv_data
 
-        # Create a text comparer using latent_semantic_analysis
-        self.comparer = self.get_lsa()
-
         # Create the master jobs network
         self.G = self.create_network_from_data()
+
+        # Create a text comparer using latent_semantic_analysis
+        self.comparer = self.get_lsa() 
 
     def employers_dataframe_to_dict(self,
                         companies_df: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
@@ -123,9 +133,6 @@ class NetworkBuilder:
 
         return cv_data
 
-    def get_lsa() -> Any:
-        pass
-
     def create_network_from_data(self, ) -> nx.MultiDiGraph:
         """
         Create a networkx MultiDiGraph to represent employers, jobs, candidates
@@ -136,7 +143,7 @@ class NetworkBuilder:
         Other types of edges that need to compare objects will be added in another
         method
         """
-
+        logger.info('Start building the master Graph...')
         # graph counts and saves its nodes and edges types
         G = nx.MultiDiGraph(name = 'Jobs graph',
                             num_employers = 0, 
@@ -172,12 +179,52 @@ class NetworkBuilder:
             G.add_node(candidate_id, node_type = 'candidate', **candidate_data)
             G.graph['num_candidates'] += 1
         
+        logger.info('Master Graph is built.')
         return G
+
+    def get_all_document_from_graph(self) -> List[str]:
+        """This method will extract all documents attribute of every node in G"""
+        all_documents = []
+        for _, node_data in self.G.nodes.items():
+            if not node_data:
+                print(_)
+                break
+            if node_data['node_type'] == 'employer':
+                all_documents.append(' '.join([str(node_data['overview']), str(node_data['benifit']) ]))
+            elif node_data['node_type'] == 'job':
+                all_documents.append(' '.join([str(node_data['three_reasons']), str(node_data['description']) ]))
+            elif node_data['node_type'] == 'candidate':
+                all_documents.append(node_data['resume'])
+            else:
+                continue
+        
+        return all_documents
+
+    def get_lsa(self,) -> latent_semantic_analysis.LSA:
+        """Create a LSA object, which will be used to compare documents.
+        """
+        logger.info('Creating Comparer')
+        all_documents = self.get_all_document_from_graph()
+        all_texts = ' '.join(all_documents)
+
+        vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=10)
+
+        self.lsa = latent_semantic_analysis.LSA(vocab, all_documents, 0.3)
+        self.lsa.do_work()
+        logger.info('Comparer created.')
 
     def add_relations_edges(self) -> None:
         """This method use Latent semantic analysis to compare different types
         of nodes to infer the 'similar' relation between them and add those edges
         to the network
+        First, for each type of entities, computes and infers the 'similar' relations
+        between them and add edges represent those relations.
+        Second, for each candidate, compute the 'profile match' relation between 
+        them and add edges represent those relation
         """
+
+        pass
+
+
 
 
