@@ -1,7 +1,9 @@
-from typing import Optional, Dict, Union, List
+from typing import Optional, Dict, Union, List, Any
 import string
 import collections
 import logging
+import json
+import os
 
 import numpy as np
 
@@ -9,6 +11,9 @@ import nltk
 from nltk.corpus import stopwords
 from sklearn.feature_extraction import text 
 from sklearn import decomposition
+
+
+import constants
 
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -33,6 +38,12 @@ def make_vocab(texts: str, num_vocab: Optional[int] = None,
         min_word_count: if specified, the number of vocab will be infered such 
         that every vocabulary appear at least min_word_count times int the texts
     """
+    # load saved vocab if exist
+    if os.path.isfile(constants.VOCAB_PATH):
+        logger.info(f'Loading vocab from {constants.VOCAB_PATH}')
+        with open(constants.VOCAB_PATH, 'r') as f:
+            vocab = json.load(f)
+        return vocab
 
     if num_vocab is None and min_word_count is None:
         raise ValueError('Either num_vocab or min_word_count must be provided')
@@ -64,6 +75,10 @@ def make_vocab(texts: str, num_vocab: Optional[int] = None,
     vocab = {w: i+1 for i, w in enumerate(selected_words)}
     vocab['_unknown_'] = 0
     
+    logger.info(f'Saving vocab to {constants.VOCAB_PATH}')
+    with open(constants.VOCAB_PATH, 'w') as f:
+        json.dump(vocab, f)
+
     return vocab
 
 class LSA:
@@ -116,6 +131,17 @@ class LSA:
 
         logger.info('Done.')
     
+
+
+    def vectorize(self, document: str) -> np.ndarray:
+        """Vectorize a document.
+        """
+        
+        document = self.preprocess_text(document)
+        tfidf = self.vectorizer.transform([document],)
+        reduced_features = self.svd.transform(tfidf)
+        return reduced_features
+
     def compare_two_text(self, text1: str, text2: str,
                         method: str= 'Cosine')-> float:
         """This method takes two text and perform preprocess, vectorizer, reduce

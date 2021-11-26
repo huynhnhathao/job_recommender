@@ -1,9 +1,13 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Tuple, Any
 import logging
+import os
+import pickle
 
 import numpy as np
 import pandas as pd
 import networkx as nx
+
+from sklearn import neighbors
 
 import latent_semantic_analysis
 import constants
@@ -160,10 +164,10 @@ class NetworkBuilder:
                             num_employers = 0, 
                             num_jobs = 0,
                             num_candidates = 0,
-                            num_candidate_match_job = 0,
-                            num_similar_candidates = 0,
-                            num_similar_jobs = 0,
-                            num_similar_employers = 0,
+                            candidate_to_job = 0,
+                            candidate_to_candidate = 0,
+                            job_to_job = 0,
+                            employer_to_employer = 0,
                             num_apply = 0,
                             num_favorite = 0)
 
@@ -216,17 +220,77 @@ class NetworkBuilder:
     def get_lsa(self,) -> latent_semantic_analysis.LSA:
         """Create a LSA object, which will be used to compare documents.
         """
+
         
-        all_documents = self.get_all_document_from_graph()
-        all_texts = ' '.join(all_documents)
+        # if lsa object exist, load it
+        if os.path.isfile(constants.LSA_COMPARER_PATH):
+            logger.info(f'Loading LSA comparer from {constants.LSA_COMPARER_PATH}')
+            with open(constants.LSA_COMPARER_PATH, 'rb') as f:
+                self.lsa = pickle.load(f,)
+        else:
 
-        vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=10)
 
-        self.lsa = latent_semantic_analysis.LSA(vocab, all_documents, constants.NUM_REDUCED_FEATURES)
-        self.lsa.do_work()
-        logger.info('Comparer created.')
+            all_documents = self.get_all_document_from_graph()
+            all_texts = ' '.join(all_documents)
 
-    def add_relations_edges(self) -> None:
+            vocab = latent_semantic_analysis.make_vocab(all_texts, min_word_count=10)
+
+            self.lsa = latent_semantic_analysis.LSA(vocab, all_documents, constants.NUM_REDUCED_FEATURES)
+            self.lsa.do_work()
+            logger.info(f'Saving LSA comparer to {constants.LSA_COMPARER_PATH}')
+            with open(constants.LSA_COMPARER_PATH, 'wb') as f:
+                pickle.dump(self.lsa, f, pickle.HIGHEST_PROTOCOL )
+
+
+    def vectorize_nodes(self) -> None:
+        """
+        For each node in self.G, add a node attribute `tfidf` represent the node 
+        content as a reduced tf-idf vector.
+        """
+        # loop over all node
+        for node_name in self.G:
+            node = self.G.nodes[node_name]
+            type = node['node_type']
+            document = None
+            if type == 'employer':
+                document = [str(node['overview']), str(node['expertise']), str(node['benifit'])]
+            elif type == 'job':
+                document = [str(node['three_reasons']), str(node['description'])]
+            elif type == 'candidate':
+                document = [str(node['expertise']), str(node['resume'])]
+            if document is None:
+                logger.info(f'Node {node} has no information to vectorize')
+                self.G.nodes[node_name]['reduced_tfidf'] = np.array([])
+                continue
+            try:
+                document = ' '.join(document)
+            except:
+                print(document)
+            vector = self.lsa.vectorize(document)
+            self.G.nodes[node_name]['reduced_tfidf'] = vector
+
+    def get_k_neighbors(self, data: np.ndarray, label: np.ndarray,
+            k: int) -> Tuple[neighbors.KNeighborsClassifier, List[List[int]]]:
+        """Build a KNN classifier, fit on data and find K neighbors for each
+        data point in data
+        Args
+            data: ndarray of shape (n_samples, dim) data to fit KNN
+            num_neighbors: number of neighbors to find for each point
+        Returns
+            The fitted KNN object, a list of list of neighbors of each data point
+            the returned neighbors are just the indices of data points in our data.
+        """
+        knn = neighbors.KNeighborsClassifier(10, metric = 'euclidean')
+        knn.fit(data, label)
+        all_neighbors = []
+        for point in data:
+            nbs = knn.kneighbors(point.reshape(1, -1), k, return_distance=False)
+            all_neighbors.append(nbs)
+
+
+        return knn, all_neighbors
+
+    def add_relations_edges(self, method = 'knn') -> None:
         """This method use Latent semantic analysis to compare different types
         of nodes to infer the 'similar' relation between them and add those edges
         to the network
@@ -234,10 +298,84 @@ class NetworkBuilder:
         between them and add edges represent those relations.
         Second, for each candidate, compute the 'profile match' relation between 
         them and add edges represent those relation
-        """
 
-        pass
-    
+        Args:
+            method: can be `knn` or `cosine`, use knn classifier or cosine similarity
+                to find neighbors
+        """
+        
+        # Each type of entity has its own knn model
+        employer_node_names = [key for key, item in self.G.nodes.items() if item['node_type'] == 'employer']
+        job_node_names = [key for key, item in self.G.nodes.items() if item['node_type'] == 'job']
+        candidate_node_names = [key for key, item in self.G.nodes.items() if item['node_type'] == 'candidate']
+
+        employer_vectors = [self.G.nodes[employer]['reduced_tfidf'] for employer in employer_node_names]
+        employer_vectors = np.array(employer_vectors).reshape(len(employer_node_names), -1)
+        num_employer_neighbors = int(constants.NEIGHBOR_RATIO * len(employer_node_names))
+        self.employer_knn, employer_neighbors = self.get_k_neighbors(employer_vectors,
+                                                np.arange(len(employer_node_names)),
+                                                num_employer_neighbors)
+
+
+        job_vectors = [self.G.nodes[job]['reduced_tfidf'] for job in job_node_names]
+        job_vectors = np.array(job_vectors).reshape(len(job_node_names), -1)
+        num_job_neighbors = int(constants.NEIGHBOR_RATIO * len(job_node_names))
+        self.job_knn, job_neighbors = self.get_k_neighbors(job_vectors,
+                                    np.arange(len(job_node_names)),
+                                    num_job_neighbors)
+
+
+        candidate_vectors = [self.G.nodes[candidate]['reduced_tfidf'] for candidate in candidate_node_names]
+        candidate_vectors = np.array(candidate_vectors).reshape(len(candidate_node_names), -1)
+
+        num_candidate_neighbors = int(constants.NEIGHBOR_RATIO * len(candidate_node_names))
+
+        self.candidate_knn, candidate_neighbors = self.get_k_neighbors(candidate_vectors,
+                                                np.arange(len(candidate_node_names)),
+                                                num_candidate_neighbors)
+
+
+        # counting the number of edges for each edge type
+        for i, nbs in enumerate(employer_neighbors):
+            this_employer = employer_node_names[i]
+            for nb_index in nbs[0]:
+                try:
+                    nb_name = employer_node_names[nb_index]
+                except:
+                    print(nb_index)
+                if not self.G.has_edge(this_employer, nb_name):
+                    self.G.add_edge(this_employer, nb_name, edge_type = 'employer_to_employer')
+                    self.G.graph['employer_to_employer'] += 1
+                
+
+        for i, nbs in enumerate(job_neighbors):
+            this_job = job_node_names[i]
+            for nb_index in nbs[0]:
+                nb_name = job_node_names[nb_index]
+                if not self.G.has_edge(this_job, nb_name):
+                    self.G.add_edge(this_job, nb_name, edge_type = 'job_to_job')
+                    self.G.graph['job_to_job'] += 1
+
+        for i, nbs in enumerate(candidate_neighbors):
+            this_candidate = candidate_node_names[i]
+            for nb_index in nbs[0]:
+                nb_name = candidate_node_names[nb_index]
+                if not self.G.has_edge(this_candidate, nb_name):
+                    self.G.add_edge(this_candidate, nb_name, edge_type = 'candidate_to_candidate')
+                    self.G.graph['candidate_to_candidate'] += 1
+        # now add candidate_to_job or profile_matched edges
+
+        pm_num_neigbors = int(constants.PROFILE_MATCHED_NEIHBOR_RATIO * len(candidate_node_names))
+        for i, vector in enumerate(candidate_vectors):
+            this_candidate = candidate_node_names[i]
+            nbs = self.job_knn.kneighbors(vector.reshape(1, -1), pm_num_neigbors, return_distance = False)
+            for nb_index in nbs[0]:
+                nb_name = job_node_names[nb_index]
+                if not self.G.has_edge(this_candidate, nb_name):
+                    self.G.add_edge(this_candidate, nb_name)
+                    self.G.graph['candidate_to_job'] +=1
+
+        
 
     def build(self,) -> None:
         """Build the network.
@@ -250,19 +388,28 @@ class NetworkBuilder:
         logger.info('Creating LSA comparer')
         self.get_lsa() 
         
+        logger.info('Compute tf-idf vector for every node')
+        self.vectorize_nodes()
+        
         logger.info('Adding relations edges...')
         self.add_relations_edges()
+
+        logger.info('Network is built.')
 
 
 if __name__ == '__main__':
 
 
     network = NetworkBuilder(constants.EMPLOYERS_DATA_PATH,
-                        constants.JOBs_DATA_PATH,
+                        constants.JOBS_DATA_PATH,
                         constants.CV_DATAPATH)
 
     network.build()
+    network_builder_path = constants.NETWORK_BUILDER_SAVE_PATH
+    logger.info(f'saving network builder object to {constants.NETWORK_BUILDER_SAVE_PATH}')
 
+    with open(constants.NETWORK_BUILDER_SAVE_PATH, 'wb') as f:
+        pickle.dump(network, f, pickle.HIGHEST_PROTOCOL)
 
 
         
