@@ -130,8 +130,6 @@ class LSA:
         self.svd.fit(features_matrix)
 
         logger.info('Done.')
-    
-
 
     def vectorize(self, document: str) -> np.ndarray:
         """Vectorize a document.

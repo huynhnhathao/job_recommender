@@ -2,6 +2,7 @@ from typing import Dict, List, Tuple, Any
 import logging
 import os
 import pickle
+from networkx.algorithms.shortest_paths import weighted
 
 import numpy as np
 import pandas as pd
@@ -344,7 +345,9 @@ class NetworkBuilder:
                 except:
                     print(nb_index)
                 if not self.G.has_edge(this_employer, nb_name):
-                    self.G.add_edge(this_employer, nb_name, edge_type = 'employer_to_employer')
+                    self.G.add_edge(this_employer, nb_name,
+                            edge_type = 'employer_to_employer',
+                            weight = constants.SIMILAR_WEIGHT)
                     self.G.graph['employer_to_employer'] += 1
                 
 
@@ -353,7 +356,9 @@ class NetworkBuilder:
             for nb_index in nbs[0]:
                 nb_name = job_node_names[nb_index]
                 if not self.G.has_edge(this_job, nb_name):
-                    self.G.add_edge(this_job, nb_name, edge_type = 'job_to_job')
+                    self.G.add_edge(this_job, nb_name,
+                            edge_type = 'job_to_job',
+                            weight = constants.SIMILAR_WEIGHT)
                     self.G.graph['job_to_job'] += 1
 
         for i, nbs in enumerate(candidate_neighbors):
@@ -361,7 +366,9 @@ class NetworkBuilder:
             for nb_index in nbs[0]:
                 nb_name = candidate_node_names[nb_index]
                 if not self.G.has_edge(this_candidate, nb_name):
-                    self.G.add_edge(this_candidate, nb_name, edge_type = 'candidate_to_candidate')
+                    self.G.add_edge(this_candidate, nb_name,
+                            edge_type = 'candidate_to_candidate',
+                            weight = constants.SIMILAR_WEIGHT)
                     self.G.graph['candidate_to_candidate'] += 1
         # now add candidate_to_job or profile_matched edges
 
@@ -372,10 +379,27 @@ class NetworkBuilder:
             for nb_index in nbs[0]:
                 nb_name = job_node_names[nb_index]
                 if not self.G.has_edge(this_candidate, nb_name):
-                    self.G.add_edge(this_candidate, nb_name)
+                    self.G.add_edge(this_candidate, nb_name,
+                            edge_type = 'candidate_to_job',
+                            weight = constants.PROFILE_MATCH_WEIGHT)
                     self.G.graph['candidate_to_job'] +=1
 
-        
+
+        # if two candidate have the same expertise, they are connected to each
+        # others
+        for c1 in candidate_node_names:
+            c1_expertise = self.G.nodes[c1]['expertise'] 
+            for c2 in candidate_node_names:
+                if c1 == c2:
+                    continue
+                else:
+                    if self.G.nodes[c2]['expertise'] == c1_expertise:
+                        if not self.G.has_edge(c1, c2):
+                            self.G.add_edge(c1, c2,
+                                    edge_type = 'candidate_to_candidate',
+                                    weight = constants.SIMILAR_WEIGHT)
+                            self.G.graph['candidate_to_candidate'] += 1
+
 
     def build(self,) -> None:
         """Build the network.
@@ -399,23 +423,19 @@ class NetworkBuilder:
 
 if __name__ == '__main__':
 
+    if os.path.isfile(constants.NETWORK_BUILDER_SAVE_PATH):
+        logger.info(f'Loading network from {constants.NETWORK_BUILDER_SAVE_PATH}')
+        with open(constants.NETWORK_BUILDER_SAVE_PATH, 'rb') as f:
+            network = pickle.load(f)
 
-    network = NetworkBuilder(constants.EMPLOYERS_DATA_PATH,
-                        constants.JOBS_DATA_PATH,
-                        constants.CV_DATAPATH)
+    else:
+        network = NetworkBuilder(constants.EMPLOYERS_DATA_PATH,
+                            constants.JOBS_DATA_PATH,
+                            constants.CV_DATAPATH)
 
-    network.build()
-    network_builder_path = constants.NETWORK_BUILDER_SAVE_PATH
-    logger.info(f'saving network builder object to {constants.NETWORK_BUILDER_SAVE_PATH}')
+        network.build()
 
-    with open(constants.NETWORK_BUILDER_SAVE_PATH, 'wb') as f:
-        pickle.dump(network, f, pickle.HIGHEST_PROTOCOL)
+        logger.info(f'saving network builder object to {constants.NETWORK_BUILDER_SAVE_PATH}')
 
-
-        
-        
-
-
-
-
-
+        with open(constants.NETWORK_BUILDER_SAVE_PATH, 'wb') as f:
+            pickle.dump(network, f, pickle.HIGHEST_PROTOCOL)
