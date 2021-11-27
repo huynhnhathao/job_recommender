@@ -162,7 +162,6 @@ class LSA:
 
 
 
-    
 
 if __name__ == '__main__':
     texts = 'The cat sat on the mat with another cat sat on the floor and another cat sat on the table'

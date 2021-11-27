@@ -304,6 +304,8 @@ class NetworkBuilder:
             method: can be `knn` or `cosine`, use knn classifier or cosine similarity
                 to find neighbors
         """
+        if method not in ['knn', 'cosine']:
+            raise ValueError('Method must be either `knn` or `cosine`')
         
         # Each type of entity has its own knn model
         employer_node_names = [key for key, item in self.G.nodes.items() if item['node_type'] == 'employer']
@@ -312,81 +314,94 @@ class NetworkBuilder:
 
         employer_vectors = [self.G.nodes[employer]['reduced_tfidf'] for employer in employer_node_names]
         employer_vectors = np.array(employer_vectors).reshape(len(employer_node_names), -1)
-        num_employer_neighbors = int(constants.NEIGHBOR_RATIO * len(employer_node_names))
-        self.employer_knn, employer_neighbors = self.get_k_neighbors(employer_vectors,
-                                                np.arange(len(employer_node_names)),
-                                                num_employer_neighbors)
 
 
         job_vectors = [self.G.nodes[job]['reduced_tfidf'] for job in job_node_names]
         job_vectors = np.array(job_vectors).reshape(len(job_node_names), -1)
-        num_job_neighbors = int(constants.NEIGHBOR_RATIO * len(job_node_names))
-        self.job_knn, job_neighbors = self.get_k_neighbors(job_vectors,
-                                    np.arange(len(job_node_names)),
-                                    num_job_neighbors)
 
 
         candidate_vectors = [self.G.nodes[candidate]['reduced_tfidf'] for candidate in candidate_node_names]
         candidate_vectors = np.array(candidate_vectors).reshape(len(candidate_node_names), -1)
 
-        num_candidate_neighbors = int(constants.NEIGHBOR_RATIO * len(candidate_node_names))
 
-        self.candidate_knn, candidate_neighbors = self.get_k_neighbors(candidate_vectors,
-                                                np.arange(len(candidate_node_names)),
-                                                num_candidate_neighbors)
+        if method == 'knn':
+            logger.info(f'Adding relations using {method}...')
+            # compute the number of neigbors needed for employer nodes
+            num_employer_neighbors = int(constants.NEIGHBOR_RATIO * len(employer_node_names))
+            # train knn mode, find k neighbors for each employer nodes
+            self.employer_knn, employer_neighbors = self.get_k_neighbors(employer_vectors,
+                                                    np.arange(len(employer_node_names)),
+                                                    num_employer_neighbors)
+            # do the similar things to job and candidate nodes
+            num_job_neighbors = int(constants.NEIGHBOR_RATIO * len(job_node_names))
+            self.job_knn, job_neighbors = self.get_k_neighbors(job_vectors,
+                                        np.arange(len(job_node_names)),
+                                        num_job_neighbors)
 
+            num_candidate_neighbors = int(constants.NEIGHBOR_RATIO * len(candidate_node_names))
+            self.candidate_knn, candidate_neighbors = self.get_k_neighbors(candidate_vectors,
+                                                    np.arange(len(candidate_node_names)),
+                                                    num_candidate_neighbors)
 
-        # counting the number of edges for each edge type
-        for i, nbs in enumerate(employer_neighbors):
-            this_employer = employer_node_names[i]
-            for nb_index in nbs[0]:
-                try:
-                    nb_name = employer_node_names[nb_index]
-                except:
-                    print(nb_index)
-                if not self.G.has_edge(this_employer, nb_name):
-                    self.G.add_edge(this_employer, nb_name,
-                            edge_type = 'employer_to_employer',
-                            weight = constants.SIMILAR_WEIGHT)
-                    self.G.graph['employer_to_employer'] += 1
-                
+            # after we know which node are neighbors of which node, the remaining
+            # job is to add edges represent these relationships
+            for i, nbs in enumerate(employer_neighbors):
+                this_employer = employer_node_names[i]
+                for nb_index in nbs[0]:
+                    try:
+                        nb_name = employer_node_names[nb_index]
+                    except:
+                        print(nb_index)
+                    if not self.G.has_edge(this_employer, nb_name):
+                        self.G.add_edge(this_employer, nb_name,
+                                edge_type = 'employer_to_employer',
+                                weight = constants.SIMILAR_WEIGHT)
+                        self.G.graph['employer_to_employer'] += 1
+                    
 
-        for i, nbs in enumerate(job_neighbors):
-            this_job = job_node_names[i]
-            for nb_index in nbs[0]:
-                nb_name = job_node_names[nb_index]
-                if not self.G.has_edge(this_job, nb_name):
-                    self.G.add_edge(this_job, nb_name,
-                            edge_type = 'job_to_job',
-                            weight = constants.SIMILAR_WEIGHT)
-                    self.G.graph['job_to_job'] += 1
+            for i, nbs in enumerate(job_neighbors):
+                this_job = job_node_names[i]
+                for nb_index in nbs[0]:
+                    nb_name = job_node_names[nb_index]
+                    if not self.G.has_edge(this_job, nb_name):
+                        self.G.add_edge(this_job, nb_name,
+                                edge_type = 'job_to_job',
+                                weight = constants.SIMILAR_WEIGHT)
+                        self.G.graph['job_to_job'] += 1
 
-        for i, nbs in enumerate(candidate_neighbors):
-            this_candidate = candidate_node_names[i]
-            for nb_index in nbs[0]:
-                nb_name = candidate_node_names[nb_index]
-                if not self.G.has_edge(this_candidate, nb_name):
-                    self.G.add_edge(this_candidate, nb_name,
-                            edge_type = 'candidate_to_candidate',
-                            weight = constants.SIMILAR_WEIGHT)
-                    self.G.graph['candidate_to_candidate'] += 1
-        # now add candidate_to_job or profile_matched edges
+            for i, nbs in enumerate(candidate_neighbors):
+                this_candidate = candidate_node_names[i]
+                for nb_index in nbs[0]:
+                    nb_name = candidate_node_names[nb_index]
+                    if not self.G.has_edge(this_candidate, nb_name):
+                        self.G.add_edge(this_candidate, nb_name,
+                                edge_type = 'candidate_to_candidate',
+                                weight = constants.SIMILAR_WEIGHT)
+                        self.G.graph['candidate_to_candidate'] += 1
 
-        pm_num_neigbors = int(constants.PROFILE_MATCHED_NEIHBOR_RATIO * len(candidate_node_names))
-        for i, vector in enumerate(candidate_vectors):
-            this_candidate = candidate_node_names[i]
-            nbs = self.job_knn.kneighbors(vector.reshape(1, -1), pm_num_neigbors, return_distance = False)
-            for nb_index in nbs[0]:
-                nb_name = job_node_names[nb_index]
-                if not self.G.has_edge(this_candidate, nb_name):
-                    self.G.add_edge(this_candidate, nb_name,
-                            edge_type = 'candidate_to_job',
-                            weight = constants.PROFILE_MATCH_WEIGHT)
-                    self.G.graph['candidate_to_job'] +=1
+            # We have special care to the candidate_to_job relation, but in general
+            # it's the same as previous
+            pm_num_neigbors = int(constants.PROFILE_MATCHED_NEIHBOR_RATIO * len(candidate_node_names))
+            for i, vector in enumerate(candidate_vectors):
+                this_candidate = candidate_node_names[i]
+                nbs = self.job_knn.kneighbors(vector.reshape(1, -1), pm_num_neigbors, return_distance = False)
+                for nb_index in nbs[0]:
+                    nb_name = job_node_names[nb_index]
+                    if not self.G.has_edge(this_candidate, nb_name):
+                        self.G.add_edge(this_candidate, nb_name,
+                                edge_type = 'candidate_to_job',
+                                weight = constants.PROFILE_MATCH_WEIGHT)
+                        self.G.graph['candidate_to_job'] +=1
 
+        if method == 'cosine':
+            logger.info(f'Adding relations using {method}...')
+            # compute similarity between entities of the same type.
+            # and add to
+            pass
 
         # if two candidate have the same expertise, they are connected to each
-        # others
+        # others. This relation does not depend on whether we use KNN
+        # or cosine similarity.
         for c1 in candidate_node_names:
             c1_expertise = self.G.nodes[c1]['expertise'] 
             for c2 in candidate_node_names:
@@ -416,7 +431,7 @@ class NetworkBuilder:
         self.vectorize_nodes()
         
         logger.info('Adding relations edges...')
-        self.add_relations_edges()
+        self.add_relations_edges(method = constants.SIMILARITY_METHOD,)
 
         logger.info('Network is built.')
 
