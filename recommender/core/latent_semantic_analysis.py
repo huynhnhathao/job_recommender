@@ -160,6 +160,12 @@ class LSA:
         """
         pass
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> d7b64b79bfb8ad91cd25d7008a453bb602aad426
 if __name__ == '__main__':
     texts = 'The cat sat on the mat with another cat sat on the floor and another cat sat on the table'
     print(make_vocab(texts, min_word_count = 2))
