@@ -30,4 +30,4 @@ PROFILE_MATCHED_NEIHBOR_RATIO = 0.01
 SIMILARITY_METHOD = 'cosine'
 
 # Two nodes are considered similar if they have the cosine similarity > this threshold
-COSINE_SIMILARITY_THRESHOLD = 0.5
+COSINE_SIMILARITY_THRESHOLD = 0.4

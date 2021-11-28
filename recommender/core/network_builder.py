@@ -23,6 +23,10 @@ logger = logging.getLogger()
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
+# TODO: candidate_to_job relations
+# TODO: 2 way similar relations
+
+
 class NetworkBuilder:
 
     def __init__(self, employers_data: pd.DataFrame, 
@@ -366,7 +370,9 @@ class NetworkBuilder:
             # and add to
             for i, id1 in enumerate(employer_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
-                for id2 in employer_node_names[i + 1:]:
+                for id2 in employer_node_names:
+                    if id1 == id2:
+                        continue
                     id2_vector = self.G.nodes[id2]['reduced_tfidf']
                     sim = 1 - distance.cosine(id1_vector, id2_vector)
                     if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
@@ -376,7 +382,9 @@ class NetworkBuilder:
 
             for i, id1 in enumerate(job_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
-                for id2 in job_node_names[i+1:]:
+                for id2 in job_node_names:
+                    if id1 == id2:
+                        continue
                     id2_vector = self.G.nodes[id2]['reduced_tfidf']
                     sim = 1 - distance.cosine(id1_vector, id2_vector)
                     if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
@@ -386,7 +394,9 @@ class NetworkBuilder:
 
             for i, id1 in enumerate(candidate_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
-                for id2 in candidate_node_names[i+1:]:
+                for id2 in candidate_node_names:
+                    if id1 == id2:
+                        continue
                     id2_vector = self.G.nodes[id2]['reduced_tfidf']
                     sim = 1 - distance.cosine(id1_vector, id2_vector)
                     if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
@@ -394,12 +404,19 @@ class NetworkBuilder:
                                     cosine_similarity = sim)
                         self.G.graph['candidate_to_candidate'] += 1
 
+            # relations between candidate and job
+            for i, id1 in enumerate(candidate_node_names):
+                for id2 in job_node_names:
+                    pass
+
         # if two candidate have the same expertise, they are connected to each
         # others. This relation does not depend on whether we use KNN
         # or cosine similarity.
         for i, id1 in enumerate(candidate_node_names):
             id1_expertise = self.G.nodes[id1]['expertise'] 
-            for id2 in candidate_node_names[i+1:]:
+            for id2 in candidate_node_names:
+                if id1 == id2:
+                    continue
                 id2_expertise = self.G.nodes[id2]['expertise']
                 if id1_expertise == id2_expertise:
                     self.G.add_edge(id1, id2,
