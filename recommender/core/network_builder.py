@@ -9,6 +9,8 @@ import pandas as pd
 import networkx as nx
 
 from sklearn import neighbors
+from scipy.spatial import distance
+from sklearn.metrics.pairwise import cosine_similarity
 
 import latent_semantic_analysis
 import constants
@@ -22,47 +24,18 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 class NetworkBuilder:
-    """This class build a network of jobs, employers and candidates.
 
-    First, all the entities of three types will be added to one single network
-    as nodes. Each node has attribute `type`: str to tell which type it is.
-
-    Then all the relations that can be extracted directly from data will be added
-    to the networks as edges. Those relations include a company posted a job.
-
-    Then the similar relation between two node of the same type can be computed 
-    using latent semantic analysis, the most k percent similar nodes will be connected
-    by the 'similar' edge.
-
-    The next relation is 'profile match', which is a relation between a candidate 
-    and a job. We can derrive this relation using LSA as above.
-
-    Another interaction relations can be added from data are apply, favorite, 
-    like and visit. We will consider simulate it.
-
-    The network only contains the semantic relationships beween nodes, not the 
-    data of these node. We will use the entity's id to represent an entity.
-
-
-
-    Node types:
-        Employer: str: a unique string id for an employer
-        Candidate: str: a unique string id for a candidate
-        Job: str: a unique string id for a job posted by an employer
-
-    
-    """
     def __init__(self, employers_data: pd.DataFrame, 
                 jobs_data: pd.DataFrame,
                 cv_data: pd.DataFrame) -> None:
         """
         Args:
-            employer_data: a dict map from employer/company unique id to its data
-            job_data: a dict map from job's unique id to its data
-            cv_data: CV of candidates in the network
-        All of those data are expected to be in English
+            employer_data: dataframe, or the path to the data
+            job_data: dataframe, or the path to data
+            cv_data: dataframe, of path to data
 
         """
+
         if isinstance(employers_data, pd.DataFrame):
             self.employers_data = self.employers_dataframe_to_dict(employers_data)
         elif isinstance(employers_data, str):
@@ -154,8 +127,8 @@ class NetworkBuilder:
         Create a networkx MultiDiGraph to represent employers, jobs, candidates
         as nodes and the 'posted' relations between employer and job as edge.
 
-        The graph created by this method only create edges that can be directly 
-        infered from data, such as 'posted' and interaction edges.
+        The graph created by this method only create explicit edges from data,
+        such as 'posted' and interaction edges.
         Other types of edges that need to compare objects will be added in another
         method
         """
@@ -182,9 +155,9 @@ class NetworkBuilder:
             G.add_node(job_id, node_type = 'job', **job_data)
             G.graph['num_jobs'] += 1
             # add two edges between job and its employers\
-            G.add_edge(job_id, job_data['company_id'], weight = 1, 
+            G.add_edge(job_id, job_data['company_id'], weight = constants.POSTED_WEIGHT, 
                         edge_type = 'posted')
-            G.add_edge(job_data['company_id'], job_id, weight = 1, 
+            G.add_edge(job_data['company_id'], job_id, weight = constants.POSTED_WEIGHT, 
                         edge_type = 'posted')
 
         # add candidates to the network. Candidate node ids are set and managed
@@ -194,12 +167,11 @@ class NetworkBuilder:
             candidate_id = 'candidate-%d'%G.graph['num_candidates']
             G.add_node(candidate_id, node_type = 'candidate', **candidate_data)
             G.graph['num_candidates'] += 1
-        
-        
         return G
 
     def get_all_document_from_graph(self) -> List[str]:
-        """This method will extract all documents attribute of every node in G,
+        """
+        This method will extract all documents attribute of every node in G,
         used to construct the vocab for LSA
         """
         all_documents = []
@@ -221,16 +193,12 @@ class NetworkBuilder:
     def get_lsa(self,) -> latent_semantic_analysis.LSA:
         """Create a LSA object, which will be used to compare documents.
         """
-
-        
         # if lsa object exist, load it
         if os.path.isfile(constants.LSA_COMPARER_PATH):
             logger.info(f'Loading LSA comparer from {constants.LSA_COMPARER_PATH}')
             with open(constants.LSA_COMPARER_PATH, 'rb') as f:
                 self.lsa = pickle.load(f,)
         else:
-
-
             all_documents = self.get_all_document_from_graph()
             all_texts = ' '.join(all_documents)
 
@@ -242,10 +210,9 @@ class NetworkBuilder:
             with open(constants.LSA_COMPARER_PATH, 'wb') as f:
                 pickle.dump(self.lsa, f, pickle.HIGHEST_PROTOCOL )
 
-
     def vectorize_nodes(self) -> None:
         """
-        For each node in self.G, add a node attribute `tfidf` represent the node 
+        For each node in self.G, add a node attribute `reduced_tfidf` represent the node 
         content as a reduced tf-idf vector.
         """
         # loop over all node
@@ -291,7 +258,7 @@ class NetworkBuilder:
 
         return knn, all_neighbors
 
-    def add_relations_edges(self, method = 'knn') -> None:
+    def add_relations_edges(self, method = 'cosine') -> None:
         """This method use Latent semantic analysis to compare different types
         of nodes to infer the 'similar' relation between them and add those edges
         to the network
@@ -397,24 +364,48 @@ class NetworkBuilder:
             logger.info(f'Adding relations using {method}...')
             # compute similarity between entities of the same type.
             # and add to
-            pass
+            for i, id1 in enumerate(employer_node_names):
+                id1_vector = self.G.nodes[id1]['reduced_tfidf']
+                for id2 in employer_node_names[i + 1:]:
+                    id2_vector = self.G.nodes[id2]['reduced_tfidf']
+                    sim = 1 - distance.cosine(id1_vector, id2_vector)
+                    if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
+                        self.G.add_edge(id1, id2, edge_type = 'employer_to_employer',
+                                    cosine_similarity = sim)
+                        self.G.graph['employer_to_employer'] += 1
+
+            for i, id1 in enumerate(job_node_names):
+                id1_vector = self.G.nodes[id1]['reduced_tfidf']
+                for id2 in job_node_names[i+1:]:
+                    id2_vector = self.G.nodes[id2]['reduced_tfidf']
+                    sim = 1 - distance.cosine(id1_vector, id2_vector)
+                    if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
+                        self.G.add_edge(id1, id2, edge_type = 'job_to_job',
+                                cosine_similarity = sim)
+                        self.G.graph['job_to_job'] += 1
+
+            for i, id1 in enumerate(candidate_node_names):
+                id1_vector = self.G.nodes[id1]['reduced_tfidf']
+                for id2 in candidate_node_names[i+1:]:
+                    id2_vector = self.G.nodes[id2]['reduced_tfidf']
+                    sim = 1 - distance.cosine(id1_vector, id2_vector)
+                    if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
+                        self.G.add_edge(id1, id2, edge_type = 'candidate_to_candidate',
+                                    cosine_similarity = sim)
+                        self.G.graph['candidate_to_candidate'] += 1
 
         # if two candidate have the same expertise, they are connected to each
         # others. This relation does not depend on whether we use KNN
         # or cosine similarity.
-        for c1 in candidate_node_names:
-            c1_expertise = self.G.nodes[c1]['expertise'] 
-            for c2 in candidate_node_names:
-                if c1 == c2:
-                    continue
-                else:
-                    if self.G.nodes[c2]['expertise'] == c1_expertise:
-                        if not self.G.has_edge(c1, c2):
-                            self.G.add_edge(c1, c2,
-                                    edge_type = 'candidate_to_candidate',
-                                    weight = constants.SIMILAR_WEIGHT)
-                            self.G.graph['candidate_to_candidate'] += 1
-
+        for i, id1 in candidate_node_names:
+            id1_expertise = self.G.nodes[id1]['expertise'] 
+            for id2 in candidate_node_names[i+1:]:
+                id2_expertise = self.G.nodes[id2]['expertise']
+                if id1_expertise == id2_expertise:
+                    self.G.add_edge(id1, id2,
+                            edge_type = 'candidate_to_candidate',
+                            weight = constants.SIMILAR_WEIGHT)
+                    self.G.graph['candidate_to_candidate'] += 1
 
     def build(self,) -> None:
         """Build the network.

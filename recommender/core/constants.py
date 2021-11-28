@@ -28,3 +28,6 @@ NUM_REDUCED_FEATURES = 0.3
 NEIGHBOR_RATIO = 0.01
 PROFILE_MATCHED_NEIHBOR_RATIO = 0.01
 SIMILARITY_METHOD = 'cosine'
+
+# Two nodes are considered similar if they have the cosine similarity > this threshold
+COSINE_SIMILARITY_THRESHOLD = 0.5
