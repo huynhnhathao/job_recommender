@@ -397,7 +397,7 @@ class NetworkBuilder:
         # if two candidate have the same expertise, they are connected to each
         # others. This relation does not depend on whether we use KNN
         # or cosine similarity.
-        for i, id1 in candidate_node_names:
+        for i, id1 in enumerate(candidate_node_names):
             id1_expertise = self.G.nodes[id1]['expertise'] 
             for id2 in candidate_node_names[i+1:]:
                 id2_expertise = self.G.nodes[id2]['expertise']
