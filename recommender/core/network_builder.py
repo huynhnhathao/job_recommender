@@ -2,7 +2,8 @@ from typing import Dict, List, Tuple, Any
 import logging
 import os
 import pickle
-from networkx.algorithms.shortest_paths import weighted
+import string
+
 
 import numpy as np
 import pandas as pd
@@ -10,7 +11,6 @@ import networkx as nx
 
 from sklearn import neighbors
 from scipy.spatial import distance
-from sklearn.metrics.pairwise import cosine_similarity
 
 import latent_semantic_analysis
 import constants
@@ -236,12 +236,34 @@ class NetworkBuilder:
                 logger.info(f'Node {node} has no information to vectorize')
                 self.G.nodes[node_name]['reduced_tfidf'] = np.array([])
                 continue
-            try:
-                document = ' '.join(document)
-            except:
-                print(document)
+
+            document = ' '.join(document)
+
             vector = self.lsa.vectorize(document)
             self.G.nodes[node_name]['reduced_tfidf'] = vector
+
+    def create_keywords_for_nodes(self, ) -> None:
+        """Creating keywords from node's attribute, save to node.
+        Those keywords will be used in search later
+        """
+        processor = lambda x: x.lower().translate(str.maketrans('', '', string.punctuation)).split()
+        for node_name in self.G:
+            node = self.G.nodes[node_name]
+            type = node['node_type']
+            document = None
+            if type == 'employer':
+                document = [str(node['overview']), str(node['expertise']), str(node['benifit'])]
+            elif type == 'job':
+                document = [str(node['three_reasons']), str(node['description'])]
+            elif type == 'candidate':
+                document = [str(node['expertise']), str(node['resume'])]
+
+            document = ' '.join(document)
+            keywords = processor(document)
+
+            keywords = ' '.join(keywords).split()
+
+            self.G.nodes[node_name]['keywords'] = keywords
 
     def get_k_neighbors(self, data: np.ndarray, label: np.ndarray,
             k: int) -> Tuple[neighbors.KNeighborsClassifier, List[List[int]]]:
@@ -463,6 +485,9 @@ class NetworkBuilder:
         
         logger.info('Compute tf-idf vector for every node')
         self.vectorize_nodes()
+
+        logger.info('Creating keywords for nodes...')
+        self.create_keywords_for_nodes()
         
         logger.info('Adding relations edges...')
         self.add_relations_edges(method = constants.SIMILARITY_METHOD,)

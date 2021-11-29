@@ -1,4 +1,5 @@
 from typing import List
+import re
 
 import numpy as np
 import pandas as pd
@@ -121,7 +122,6 @@ class JobRecommender:
 
                 self.G.graph['candidate_to_job'] +=1
     
-     
     def add_node_to_graph(self, node_type: str,
                     node_data: Dict[str, Any]) -> None:
 
@@ -141,37 +141,66 @@ class JobRecommender:
         if node_type == 'job':
             self._add_job_node(node_data)
 
-
     def rank_nodes(self,
                 personalized: bool = False,
-                target_node: Optional[str] = None ) -> Dict[str, float]:
+                target_node: Optional[str] = None,
+                return_node_type: Optional[str] = 'job') -> Dict[str, float]:
         """
         Use PageRank on self.G and return ranked nodes
         if personalized is True, use Personalized PageRanke with damping
         prob = 1 on target_node
+
+        Args:
+            personalized: If true, do Personalized PageRank
+            target_node: id of the target node to bias PageRank to
+            return_node_type: which type of node to return, if not specified, 
+                return all nodes
 
         Returns a dict of node names map to its ranks
         """
         if personalized:
             ranked_nodes = nx.algorithms.link_analysis.pagerank(self.G, 
                             constants.alpha, {target_node: 1})
-
-            ranked_nodes = {key:value for key, value in sorted(ranked_nodes.items(), key = lambda x: x[1], reverse = True)}
-            return ranked_nodes
         else:
             ranked_nodes = nx.algorithms.link_analysis.pagerank(self.G, 
                                 constants.alpha)
-            return ranked_nodes
-        
-        
-    def _search(self, keywords: str) -> list:
-        """Search for all jobs that match keywords"""
-        pass
+        if return_node_type is not None:
+            if return_node_type == 'job':
+                ranked_nodes = {key:value for key, value in ranked_nodes.items() if ':' in key}
+            elif return_node_type == 'candidate':
+                ranked_nodes = {key:value for key, value in ranked_nodes.items() if 'candidate' in key}
+            elif return_node_type == 'employer':
+                ranked_nodes = {key:value for key, value in ranked_nodes.items() if ':' not in key and 'candidate' not in key}
 
-    def _personalized_rank_nodes(self, target_node: str,
+        ranked_nodes = {key:value for key, value in sorted(ranked_nodes.items(), key = lambda x: x[1], reverse = True)}
+        return ranked_nodes        
+        
+    def search(self, keywords: str) -> list:
+        """Search for all jobs that match keywords"""
+        results = []
+        processor = lambda x: x.lower().translate(str.maketrans('', '', string.punctuation)).split()
+        keywords = set(processor(keywords))
+        for n in self.G:
+            # we do not search for candidate
+            if self.G.nodes[n]['node_type'] == 'candidate':
+                continue
+            elif self.G.nodes[n]['node_type'] == 'job':
+                job_name = self.G.nodes[n]['job_name'] 
+                job_names = processor(job_name)
+                if len(keywords.intersection(set(job_names))) > 0:
+                    results.append(n)
+            elif self.G.nodes[n]['node_type'] == 'employer':
+                employer_name = self.G.nodes[n]['company_name']
+                employer_names = processor(employer_name)
+                if len(keywords.intersection(set(employer_names))) > 0:
+                    results.append(n)
+
+        return results
+
+    def _rank_node_with_context(self, target_node: str,
                         context_nodes: List[str]) -> List[str]:
         """Rank a list of nodes using personalized PageRank w.r.t target node 
-        and context nodes
+        and context nodes.
         """
         pass
 
