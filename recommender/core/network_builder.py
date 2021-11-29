@@ -370,59 +370,84 @@ class NetworkBuilder:
             # and add to
             for i, id1 in enumerate(employer_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
-                for id2 in employer_node_names:
-                    if id1 == id2:
-                        continue
+                for id2 in employer_node_names[i+1:]:
                     id2_vector = self.G.nodes[id2]['reduced_tfidf']
                     sim = 1 - distance.cosine(id1_vector, id2_vector)
                     if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
-                        self.G.add_edge(id1, id2, edge_type = 'employer_to_employer',
+                        self.G.add_edge(id1, id2,
+                                    edge_type = 'employer_to_employer',
+                                    weight = constants.EMPLOYER_TO_EMPLOYER_WEIGHT,
                                     cosine_similarity = sim)
-                        self.G.graph['employer_to_employer'] += 1
+                        self.G.add_edge(id2, id1,
+                                    edge_type = 'employer_to_employer',
+                                    weight = constants.EMPLOYER_TO_EMPLOYER_WEIGHT,
+                                    cosine_similarity = sim)
+                        self.G.graph['employer_to_employer'] += 2
 
             for i, id1 in enumerate(job_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
-                for id2 in job_node_names:
-                    if id1 == id2:
-                        continue
+                for id2 in job_node_names[i+1:]:
                     id2_vector = self.G.nodes[id2]['reduced_tfidf']
                     sim = 1 - distance.cosine(id1_vector, id2_vector)
                     if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
-                        self.G.add_edge(id1, id2, edge_type = 'job_to_job',
+                        self.G.add_edge(id1, id2,
+                                edge_type = 'job_to_job',
+                                weight = constants.JOB_TO_JOB_WEIGHT,
                                 cosine_similarity = sim)
-                        self.G.graph['job_to_job'] += 1
+                        self.G.add_edge(id1, id1,
+                                edge_type = 'job_to_job',
+                                weight = constants.JOB_TO_JOB_WEIGHT,
+                                cosine_similarity = sim)
+                        self.G.graph['job_to_job'] += 2
 
             for i, id1 in enumerate(candidate_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
-                for id2 in candidate_node_names:
-                    if id1 == id2:
-                        continue
+                for id2 in candidate_node_names[i+1:]:
                     id2_vector = self.G.nodes[id2]['reduced_tfidf']
                     sim = 1 - distance.cosine(id1_vector, id2_vector)
                     if sim >= constants.COSINE_SIMILARITY_THRESHOLD:
-                        self.G.add_edge(id1, id2, edge_type = 'candidate_to_candidate',
-                                    cosine_similarity = sim)
-                        self.G.graph['candidate_to_candidate'] += 1
+                        self.G.add_edge(id1, id2,
+                                edge_type = 'candidate_to_candidate',
+                                weight = constants.CANDIDATE_TO_CANDIDATE_WEIGHT,
+                                cosine_similarity = sim)
+                        self.G.add_edge(id2, id1,
+                                edge_type= 'candidate_to_candidate',
+                                weight = constants.CANDIDATE_TO_CANDIDATE_WEIGHT,
+                                cosine_similarity = sim)
+                        self.G.graph['candidate_to_candidate'] += 2
 
             # relations between candidate and job
             for i, id1 in enumerate(candidate_node_names):
+                id1_vector = self.G.nodes[id1]['reduced_tfidf']
                 for id2 in job_node_names:
-                    pass
+                    id2_vector = self.G.nodes[id2]['reduced_tfidf']
+                    sim = 1 - distance.cosine(id1_vector, id2_vector)
+                    if sim > constants.PROFILE_MATCHED_SIMILARITY_THRESDHOLD:
+                        self.G.add_edge(id1, id2,
+                                edge_type = 'candidate_to_job',
+                                weight = constants.CANDIDATE_TO_JOB_WEIGHT,
+                                cosine_similarity = sim)
+                        self.G.add_edge(id2, id1,
+                                edge_type = 'candidate_to_job',
+                                weight = constants.CANDIDATE_TO_JOB_WEIGHT,
+                                cosine_similarity = sim)
+                        self.G.graph['candidate_to_job'] += 2
 
         # if two candidate have the same expertise, they are connected to each
         # others. This relation does not depend on whether we use KNN
         # or cosine similarity.
         for i, id1 in enumerate(candidate_node_names):
             id1_expertise = self.G.nodes[id1]['expertise'] 
-            for id2 in candidate_node_names:
-                if id1 == id2:
-                    continue
+            for id2 in candidate_node_names[i+1:]:
                 id2_expertise = self.G.nodes[id2]['expertise']
                 if id1_expertise == id2_expertise:
                     self.G.add_edge(id1, id2,
-                            edge_type = 'candidate_to_candidate',
-                            weight = constants.SIMILAR_WEIGHT)
-                    self.G.graph['candidate_to_candidate'] += 1
+                            edge_type = 'expertise_match',
+                            weight = constants.EXPERTISE_MATCH_WEIGHT)
+                    self.G.add_edge(id2, id1,
+                            edge_type = 'expertise_match',
+                            weight = constants.EXPERTISE_MATCH_WEIGHT)
+                    self.G.graph['expertise_match'] += 2
 
     def build(self,) -> None:
         """Build the network.

@@ -13,10 +13,19 @@ VOCAB_PATH = '/home/huynhhao/Desktop/job_recommender/data/network_data/vocab.jso
 LSA_COMPARER_PATH = '/home/huynhhao/Desktop/job_recommender/data/network_data/lsa.pkl'
 
 
+# Edge weights
+#  
 POSTED_WEIGHT = 1
 APPLIED_WEIGHT = 2
-SIMILAR_WEIGHT = 1.5
-PROFILE_MATCH_WEIGHT = 1.5
+
+EMPLOYER_TO_EMPLOYER_WEIGHT = 1
+JOB_TO_JOB_WEIGHT = 1
+CANDIDATE_TO_CANDIDATE_WEIGHT = 1
+CANDIDATE_TO_JOB_WEIGHT = 1
+
+PROFILE_MATCH_WEIGHT = 1
+EXPERTISE_MATCH_WEIGHT = 1
+
 FAVORITE_WEIGHT = 1
 LIKE_WEIGHT  = 0.5
 VISIT_WEIGHT = 0.2
@@ -31,3 +40,4 @@ SIMILARITY_METHOD = 'cosine'
 
 # Two nodes are considered similar if they have the cosine similarity > this threshold
 COSINE_SIMILARITY_THRESHOLD = 0.4
+PROFILE_MATCHED_SIMILARITY_THRESDHOLD = 0.4
