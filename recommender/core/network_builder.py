@@ -23,8 +23,7 @@ logger = logging.getLogger()
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-# TODO: candidate_to_job relations
-# TODO: 2 way similar relations
+
 
 
 class NetworkBuilder:
@@ -146,6 +145,7 @@ class NetworkBuilder:
                             candidate_to_candidate = 0,
                             job_to_job = 0,
                             employer_to_employer = 0,
+                            expertise_match = 0,
                             num_apply = 0,
                             num_favorite = 0)
 
@@ -382,7 +382,7 @@ class NetworkBuilder:
                                     edge_type = 'employer_to_employer',
                                     weight = constants.EMPLOYER_TO_EMPLOYER_WEIGHT,
                                     cosine_similarity = sim)
-                        self.G.graph['employer_to_employer'] += 2
+                        self.G.graph['employer_to_employer'] += 1
 
             for i, id1 in enumerate(job_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
@@ -398,7 +398,7 @@ class NetworkBuilder:
                                 edge_type = 'job_to_job',
                                 weight = constants.JOB_TO_JOB_WEIGHT,
                                 cosine_similarity = sim)
-                        self.G.graph['job_to_job'] += 2
+                        self.G.graph['job_to_job'] += 1
 
             for i, id1 in enumerate(candidate_node_names):
                 id1_vector = self.G.nodes[id1]['reduced_tfidf']
@@ -414,7 +414,7 @@ class NetworkBuilder:
                                 edge_type= 'candidate_to_candidate',
                                 weight = constants.CANDIDATE_TO_CANDIDATE_WEIGHT,
                                 cosine_similarity = sim)
-                        self.G.graph['candidate_to_candidate'] += 2
+                        self.G.graph['candidate_to_candidate'] += 1
 
             # relations between candidate and job
             for i, id1 in enumerate(candidate_node_names):
@@ -431,7 +431,7 @@ class NetworkBuilder:
                                 edge_type = 'candidate_to_job',
                                 weight = constants.CANDIDATE_TO_JOB_WEIGHT,
                                 cosine_similarity = sim)
-                        self.G.graph['candidate_to_job'] += 2
+                        self.G.graph['candidate_to_job'] += 1
 
         # if two candidate have the same expertise, they are connected to each
         # others. This relation does not depend on whether we use KNN
@@ -447,12 +447,11 @@ class NetworkBuilder:
                     self.G.add_edge(id2, id1,
                             edge_type = 'expertise_match',
                             weight = constants.EXPERTISE_MATCH_WEIGHT)
-                    self.G.graph['expertise_match'] += 2
+                    self.G.graph['expertise_match'] += 1
 
     def build(self,) -> None:
         """Build the network.
         """
-
         logger.info('Start building the master Graph...')
         self.G = self.create_network_from_data()
         logger.info('Master Graph is built.')
