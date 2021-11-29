@@ -17,11 +17,15 @@ st.set_page_config(page_title='The Utimate Jobs Recommender', page_icon=None,
 
 @st.cache
 def load_recommender():
-    file_path = r'C:\Users\ASUS\Desktop\repositories\job_recommender\data\network_data\network_builder.pkl'
-    with open(file_path, 'rb') as f:
-        network_builder = pickle.load(f)
+    graphpath = r'C:\Users\ASUS\Desktop\repositories\job_recommender\data\network_data\graph.pkl'
+    lsapath = r'C:\Users\ASUS\Desktop\repositories\job_recommender\data\network_data\lsa.pkl'
+    with open(graphpath, 'rb') as f:
+        G = pickle.load(f)
 
-    jrec = job_recommender.JobRecommender(network_builder.G, network_builder.lsa)
+    with open(lsapath, 'rb') as f:
+        lsa = pickle.load(f)
+
+    jrec = job_recommender.JobRecommender(G, lsa)
     return jrec
 
 jrec = load_recommender()
