@@ -4,7 +4,6 @@ import os
 import pickle
 import string
 
-
 import numpy as np
 import pandas as pd
 import networkx as nx
@@ -22,9 +21,6 @@ handler.setFormatter(formmater)
 logger = logging.getLogger()
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
-
-
-
 
 class NetworkBuilder:
 

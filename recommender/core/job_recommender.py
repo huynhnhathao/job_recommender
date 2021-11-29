@@ -6,8 +6,8 @@ import pandas as pd
 import networkx as nx
 from scipy.spatial import distance
 
-from latent_semantic_analysis import *
-import constants
+from recommender.core.latent_semantic_analysis import *
+from recommender.core import constants
 
 # ideas is in streamlit app, create one function to load an object of this class
 # and add a node to the graph inside that object, then return the object, from then
@@ -144,7 +144,8 @@ class JobRecommender:
     def rank_nodes(self,
                 personalized: bool = False,
                 target_node: Optional[str] = None,
-                return_node_type: Optional[str] = 'job') -> Dict[str, float]:
+                return_node_type: Optional[str] = 'job',
+                alpha: float = 0.5) -> Dict[str, float]:
         """
         Use PageRank on self.G and return ranked nodes
         if personalized is True, use Personalized PageRanke with damping
@@ -160,10 +161,10 @@ class JobRecommender:
         """
         if personalized:
             ranked_nodes = nx.algorithms.link_analysis.pagerank(self.G, 
-                            constants.alpha, {target_node: 1})
+                            alpha, {target_node: 1})
         else:
             ranked_nodes = nx.algorithms.link_analysis.pagerank(self.G, 
-                                constants.alpha)
+                                alpha)
         if return_node_type is not None:
             if return_node_type == 'job':
                 ranked_nodes = {key:value for key, value in ranked_nodes.items() if ':' in key}
