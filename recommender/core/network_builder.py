@@ -248,9 +248,11 @@ class NetworkBuilder:
             type = node['node_type']
             document = None
             if type == 'employer':
-                document = [str(node['overview']), str(node['expertise']), str(node['benifit'])]
+                document = [str(node['overview']), str(node['expertise']),
+                            str(node['benifit']), str(node['company_name'])]
             elif type == 'job':
-                document = [str(node['three_reasons']), str(node['description'])]
+                document = [str(node['three_reasons']),
+                            str(node['description']), str(node['job_name'])]
             elif type == 'candidate':
                 document = [str(node['expertise']), str(node['resume'])]
 
@@ -258,6 +260,8 @@ class NetworkBuilder:
             keywords = processor(document)
 
             keywords = ' '.join(keywords).split()
+
+            keywords = set(keywords)
 
             self.G.nodes[node_name]['keywords'] = keywords
 
