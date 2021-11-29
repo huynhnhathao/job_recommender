@@ -1,14 +1,17 @@
 import sys
 import pickle
 sys.path.append(r'C:\Users\ASUS\Desktop\repositories\job_recommender')
+sys.path.append(r'C:\Users\ASUS\Desktop\repositories\job_recommender\recommender\core')
 
 import streamlit as st
 import pandas as pd
 import numpy as np
 
 from recommender.core import job_recommender
+from recommender.core.network_builder import *
+from recommender.core import latent_semantic_analysis
 
-
+all_expertise = []
 st.set_page_config(page_title='The Utimate Jobs Recommender', page_icon=None,
     layout="centered", initial_sidebar_state="auto", menu_items=None)
 
@@ -21,8 +24,7 @@ def load_recommender():
     jrec = job_recommender.JobRecommender(network_builder.G, network_builder.lsa)
     return jrec
 
-    
-
+jrec = load_recommender()
 
 keywords = st.text_input('Search for jobs, companies')
 st.text(keywords)

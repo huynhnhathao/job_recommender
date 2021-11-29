@@ -3,6 +3,8 @@ import logging
 import os
 import pickle
 import string
+import sys
+sys.path.append(r'C:\Users\ASUS\Desktop\repositories\job_recommender')
 
 import numpy as np
 import pandas as pd
@@ -11,8 +13,8 @@ import networkx as nx
 from sklearn import neighbors
 from scipy.spatial import distance
 
-import latent_semantic_analysis
-import constants
+from recommender.core import latent_semantic_analysis
+from recommender.core import constants
 
 handler = logging.StreamHandler()
 formmater = logging.Formatter('%(asctime)s - %(message)s')
