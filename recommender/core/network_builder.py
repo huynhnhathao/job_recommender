@@ -64,6 +64,8 @@ class NetworkBuilder:
         else:
             raise ValueError('data should be a dataframe of a path to that dataframe')
 
+        
+
         # Create the master jobs network
         self.G = None
 

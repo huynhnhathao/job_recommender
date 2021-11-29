@@ -41,3 +41,6 @@ SIMILARITY_METHOD = 'cosine'
 # Two nodes are considered similar if they have the cosine similarity > this threshold
 COSINE_SIMILARITY_THRESHOLD = 0.4
 PROFILE_MATCHED_SIMILARITY_THRESDHOLD = 0.4
+
+# damping probability for PageRank
+alpha = 0.5

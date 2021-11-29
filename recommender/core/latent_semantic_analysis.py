@@ -120,6 +120,16 @@ class LSA:
         text = [x if x in self.vocab.keys() else '_unknown_' for x in text ]
         return ' '.join(text)
 
+    def vectorize(self, document: str) -> np.ndarray:
+        """Vectorize a document.
+        """
+        
+        document = self.preprocess_text(document)
+        tfidf = self.vectorizer.transform([document],)
+        reduced_features = self.svd.transform(tfidf)
+        return reduced_features
+
+
     def do_work(self) -> None:
         """Preprocess all documents and fit the tf-idf vectorizer and the
         SVD features reducer
@@ -131,15 +141,6 @@ class LSA:
 
         logger.info('Done.')
 
-    def vectorize(self, document: str) -> np.ndarray:
-        """Vectorize a document.
-        """
-        
-        document = self.preprocess_text(document)
-        tfidf = self.vectorizer.transform([document],)
-        reduced_features = self.svd.transform(tfidf)
-        return reduced_features
-
     def compare_two_text(self, text1: str, text2: str,
                         method: str= 'Cosine')-> float:
         """This method takes two text and perform preprocess, vectorizer, reduce
@@ -148,7 +149,6 @@ class LSA:
         a candidate and a job.
         """
         pass
-
 
     def compute_linear_kernel_matrix(self, documents: List[str]) -> np.ndarray:
         """Compute and return the linear kernel matrix of all the documents using
