@@ -39,7 +39,6 @@ class JobRecommender:
         The data is expected to look like {expertise: 'some expertise',
                                             resume: 'some resume'}
         """
-
         # add one node to graph
         node_name = f"candidate-{self.G.graph['num_candidates']}"
         
@@ -52,7 +51,6 @@ class JobRecommender:
 
         # save the current candidate to our target node
         self.target_node = node_name
-
 
         candidate_node_names = []
         job_node_names = []
@@ -84,8 +82,6 @@ class JobRecommender:
                     self.G.graph['expertise_match'] += 1
 
         self.all_expertise = all_expertise
-
-
 
         # connect this node to other candidate nodes that has similar resume
         for name in candidate_node_names:
@@ -176,7 +172,13 @@ class JobRecommender:
         return ranked_nodes        
         
     def search(self, keywords: str) -> list:
-        """Search for all jobs that match keywords"""
+        """Search for all jobs that match keywords
+        Args:
+            keywords: the unprocessed keywords to search for
+
+        Returns:
+            a list of node names that match all keywords
+        """
         results = []
         processor = lambda x: x.lower().translate(str.maketrans('', '', string.punctuation)).split()
         keywords = set(processor(keywords))
@@ -185,22 +187,41 @@ class JobRecommender:
             if self.G.nodes[n]['node_type'] == 'candidate':
                 continue
             elif self.G.nodes[n]['node_type'] == 'job':
-                job_name = self.G.nodes[n]['job_name'] 
-                job_names = processor(job_name)
-                if len(keywords.intersection(set(job_names))) > 0:
+                job_keywords = self.G.nodes[n]['keywords']
+                if len(keywords.intersection(set(job_keywords))) >= len(keywords):
                     results.append(n)
             elif self.G.nodes[n]['node_type'] == 'employer':
-                employer_name = self.G.nodes[n]['company_name']
-                employer_names = processor(employer_name)
-                if len(keywords.intersection(set(employer_names))) > 0:
+                employer_keywords = self.G.nodes[n]['keywords']
+                if len(keywords.intersection(set(employer_keywords))) >= len(keywords):
                     results.append(n)
-
         return results
 
     def _rank_node_with_context(self, target_node: str,
-                        context_nodes: List[str]) -> List[str]:
+                        context_nodes: List[str], 
+                        return_node_type:Optional[str] = 'job') -> List[str]:
         """Rank a list of nodes using personalized PageRank w.r.t target node 
         and context nodes.
-        """
-        pass
 
+        Args:
+            target_node: target node for personalized PageRank
+            context_nodes: all node in context for personalized PageRank
+            return_node_type: if not specified, all nodes will be returned,
+                if specified, only nodes that belong to this type will be returned.
+        """
+        personalized = {target_node: 1}
+        for node in context_nodes:
+            personalized[node] = 1
+        ranked_nodes = nx.algorithms.link_analysis.pagerank(self.G,
+                        constants.alpha, personalized,  )
+
+        if return_node_type is not None:
+            if return_node_type == 'job':
+                ranked_nodes = {key:value for key, value in ranked_nodes.items() if ':' in key}
+            elif return_node_type == 'candidate':
+                ranked_nodes = {key:value for key, value in ranked_nodes.items() if 'candidate' in key}
+            elif return_node_type == 'employer':
+                ranked_nodes = {key:value for key, value in ranked_nodes.items() if ':' not in key and 'candidate' not in key}
+
+        ranked_nodes = {key:value for key, value in sorted(ranked_nodes.items(), key = lambda x: x[1], reverse = True)}
+
+        return ranked_nodes
