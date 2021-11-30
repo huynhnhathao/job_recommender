@@ -110,5 +110,7 @@ The network we describe above is called heterogeneous network, because it has ma
 
 ## Last words
 
-If you use this project in your work, please cite it by a direct link to this page, and the only requirement is `STAR` it.
+If you learn anything new from this project, consider `STAR` it.
+
+If you use any part of this project in your work, please cite it by a direct link to this page.
 
