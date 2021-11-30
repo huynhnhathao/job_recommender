@@ -100,13 +100,13 @@ User can choose which skills he has, then the search results respond to him will
 
 ## Discussion
 
-The network we describe above is called heterogeneous network, because it has many different node types and edge types. In fact, there is a(probably better) way to solve our problem, which is called *SocialRank algorithm*, which was designed just to rank nodes in a heterogeneous network as ours. But here we use a simpler approach which only use Personalized PageRank to rank nodes.  If you are interested in this, you can take a look at [Ranking in Heterogeneous Social Media]([Ranking in heterogeneous social media | Proceedings of the 7th ACM international conference on Web search and data mining](https://dl.acm.org/doi/10.1145/2556195.2556254)).
+The network we describe above is called heterogeneous network, because it has many different node types and edge types. In fact, there is a(probably better) way to solve our problem, which is called *SocialRank algorithm*, which was designed just to rank nodes in a heterogeneous network as ours. But here we use a simpler approach which only use Personalized PageRank to rank nodes.  If you are interested in this, you can take a look at [Ranking in heterogeneous social media | Proceedings of the 7th ACM international conference on Web search and data mining](https://dl.acm.org/doi/10.1145/2556195.2556254).
 
 ## References
 
 1. [A Recommender System for Job Seeking and Recruiting Website]()[www2013.w3c.br/companion/p963.pdf](http://www2013.w3c.br/companion/p963.pdf)
-2.  [Ranking in Heterogeneous Social Media]([Ranking in heterogeneous social media | Proceedings of the 7th ACM international conference on Web search and data mining](https://dl.acm.org/doi/10.1145/2556195.2556254)).
-3. [The 3A Personalized, Contextual and Relation-based  Recommender System]([CiteSeerX — The 3A Personalized, Contextual and Relation-based Recommender System (psu.edu)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.430.732))
+2.  [Ranking in Heterogeneous Social Media](https://dl.acm.org/doi/10.1145/2556195.2556254).
+3. [The 3A Personalized, Contextual and Relation-based  Recommender System](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.430.732)
 
 ## Last words
 
