@@ -104,7 +104,7 @@ The network we describe above is called heterogeneous network, because it has ma
 
 ## References
 
-1. [A Recommender System for Job Seeking and Recruiting Website]()[www2013.w3c.br/companion/p963.pdf](http://www2013.w3c.br/companion/p963.pdf)
+1. [A Recommender System for Job Seeking and Recruiting Website](http://www2013.w3c.br/companion/p963.pdf)
 2.  [Ranking in Heterogeneous Social Media](https://dl.acm.org/doi/10.1145/2556195.2556254).
 3. [The 3A Personalized, Contextual and Relation-based  Recommender System](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.430.732)
 
