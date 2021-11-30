@@ -12,7 +12,7 @@ Consider a scenario in which a candidate access to a job seeking website and she
 
 ## Step number 1: Crawl data
 
-The first thing we need is data. We need information about companies, its descriptions, all the jobs that posted by each companies and the job's description. For this, we will use Scrapy to crawl data from itviec.com, an IT jobs seeking website in Vietnam. All the code to do just that is in crawl_data folder. Here are the result dataframes:
+The first thing we need is data. We need information about companies, its description, all the jobs that posted by each company and the job's description. For this, we will use Scrapy to crawl data from itviec.com, an IT jobs seeking website in Vietnam. All the code to do just that is in crawl_data folder. Here are the result dataframes:
 
  **Companies dataframe**
 
@@ -22,7 +22,7 @@ The first thing we need is data. We need information about companies, its descri
 
 ![image-20211130112818381](README.assets/image-20211130112818381.png)
 
-These two dataframes are still not enough, we need data about previous candidates who used our recommender system. For that, we can not crawl from the website, but we'll use a Resume dataset from [Kaggle]([Resume Dataset | Kaggle](https://www.kaggle.com/gauravduttakiit/resume-dataset)). This dataset has resume and expertise of candidate, mostly in the IT industry. Here is how it look like:
+These two dataframes are still not enough, we need data about previous candidates who used our recommender system. For that, we can not crawl from the website, but we'll use a Resume dataset from [Resume Dataset | Kaggle](https://www.kaggle.com/gauravduttakiit/resume-dataset). This dataset has resume and expertise of candidate, mostly in the IT industry. Here is how it look like:
 
 ![image-20211130113310629](README.assets/image-20211130113310629.png)
 
@@ -30,11 +30,11 @@ We have more than 900 resumes, those resumes will plays as a candidate node in o
 
 ## Step number 2: Build the network
 
-After we have all the data we want, now is the time to do some coding exercise. All the code to build the graph is in recommender/core. Where network_builder.py build the network using Networkx and save the network to disk, constants.py contains all the arguments for our building process(I know I should have named it arguments.py), latent_semantic_analysis.py defines the method to compare two nodes and decides if they are similar enough to be considered similar!, job_recommender.py defines the main class that will recommend jobs to us. 
+After we have all the data we want, now is the time to do some coding exercises. All the code to build the graph is in recommender/core. Where network_builder.py build the network using Networkx and save the network to disk, constants.py contains all the arguments for our building process(I know I should have named it arguments.py), latent_semantic_analysis.py defines the method to compare two nodes and decide if they are similar enough to be considered similar!, job_recommender.py defines the main class that will recommend jobs to us. 
 
 ## Step number 3: Build the demo
 
-After we constructed and saved the network into disk, now we will build a demo to run our recommender using the save graph, because everyone prefers a beautiful interactive web demo to a Jupyter notebook demo. For this, we will use Streamlit, all the code is in recommender/demo.
+After we constructed and saved the network into disk, now we will build a demo to run our recommender using the saved graph, because everyone prefers a beautiful interactive web demo to a Jupyter notebook demo. For this, we will use Streamlit, all the code is in recommender/demo.
 
 ## How to build the network?
 
@@ -68,7 +68,7 @@ Another question is how to set the weight for different edge types, since obviou
 
 #### But what's latent semantic analysis?
 
-Latent semantic analysis is just a fancy name of **Term Frequency — Inverse Document Frequency(TF-IDF)** combine with singular value decomposition. Intuitively, it represents our documents by vectors so that we can use Cosine similarity or K-nearest neighbors to compare documents and decide if they are similar enough to be considered similar!
+Latent semantic analysis is just a fancy name of **Term Frequency — Inverse Document Frequency(TF-IDF)** combine with **singular value decomposition**. Intuitively, it represents our documents by vectors so that we can use Cosine similarity or K-nearest neighbors to compare documents and decide if they are similar enough to be considered similar!
 
 ### Four main ideas
 
@@ -94,13 +94,13 @@ That's it for the ideas of the PageRank algorithm.
 
 ## Personalized PageRank
 
-The key idea is using the teleportation probability to *bias toward the context nodes.* For example, if a user search for jobs using a keyword, first we will find all jobs, employers that match the keywords, then we'll use  PageRank on our network, but this time we'll set the teleportation only on those context nodes(the results) and the target user node. By doing this, we bias the searching results toward the user node and his neighbors, since if the random walker have to comeback to the user node multiple times, the probability of the random walker to visit the user's neighbor nodes will be increased, thus biasing the results ranking towards the user node. 
+The key idea is using the teleportation probability to *bias toward the context nodes.* For example, if a user search for jobs using a keyword, first we will find all jobs, employers that match the keywords, then we'll use  PageRank on our network, but this time we'll set the teleportation only on those context nodes(the results) and the target user node. By doing this, we are biasing the searching results toward the user node and his neighbors, since if the random walker have to comeback to the user node multiple times, the probability of the random walker to visit the user's neighbor nodes will be increased, thus biasing the results ranking towards the user node. 
 
 User can choose which skills he has, then the search results respond to him will *bias toward these skill, expertise.*
 
 ## Discussion
 
-The network we describe above is called heterogeneous network, because it has many different node types and edge types. In fact, there is a(probably better) way to solve our problem, which is called *SocialRank algorithm*, which was designed just to rank nodes in a heterogeneous network as ours. But here we use a simpler approach which only use Personalized PageRank to rank nodes.  If you are interested in this, you can take a look at [Ranking in heterogeneous social media | Proceedings of the 7th ACM international conference on Web search and data mining](https://dl.acm.org/doi/10.1145/2556195.2556254).
+The network we described above is called heterogeneous network, because it has many different node types and edge types. In fact, there is a(probably better) way to solve our problem, which is called *SocialRank algorithm*, which was designed just to rank nodes in a heterogeneous network as ours. But here we use a simpler approach which only use Personalized PageRank to rank nodes.  If you are interested in this, you can take a look at [Ranking in heterogeneous social media | Proceedings of the 7th ACM international conference on Web search and data mining](https://dl.acm.org/doi/10.1145/2556195.2556254).
 
 ## References
 
