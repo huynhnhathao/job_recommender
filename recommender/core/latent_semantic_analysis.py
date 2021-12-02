@@ -13,7 +13,7 @@ from sklearn.feature_extraction import text
 from sklearn import decomposition
 
 
-from recommender.core import constants
+import constants
 
 nltk.download('stopwords')
 nltk.download('wordnet')

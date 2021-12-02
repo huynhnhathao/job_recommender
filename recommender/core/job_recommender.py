@@ -6,8 +6,8 @@ import pandas as pd
 import networkx as nx
 from scipy.spatial import distance
 
-from recommender.core.latent_semantic_analysis import *
-from recommender.core import constants
+from latent_semantic_analysis import *
+import constants
 
 # ideas is in streamlit app, create one function to load an object of this class
 # and add a node to the graph inside that object, then return the object, from then

@@ -8,9 +8,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-from recommender.core import job_recommender
-from recommender.core.network_builder import *
-from recommender.core import latent_semantic_analysis
+import job_recommender
+from network_builder import *
+import latent_semantic_analysis
 
 st.set_page_config(page_title='The Ultimate Jobs Recommender', page_icon=None,
     layout="centered", initial_sidebar_state="auto", menu_items=None)
