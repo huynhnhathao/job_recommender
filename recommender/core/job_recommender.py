@@ -198,7 +198,8 @@ class JobRecommender:
         return results
 
     def _rank_node_with_context(self, target_node: str,
-                        context_nodes: List[str], 
+                        context_nodes: List[str],
+                        alpha: float,
                         return_node_type:Optional[str] = 'job') -> List[str]:
         """Rank a list of nodes using personalized PageRank w.r.t target node 
         and context nodes.
@@ -206,6 +207,7 @@ class JobRecommender:
         Args:
             target_node: target node for personalized PageRank
             context_nodes: all node in context for personalized PageRank
+            alpha: damping probability
             return_node_type: if not specified, all nodes will be returned,
                 if specified, only nodes that belong to this type will be returned.
         """
@@ -213,7 +215,7 @@ class JobRecommender:
         for node in context_nodes:
             personalized[node] = 1
         ranked_nodes = nx.algorithms.link_analysis.pagerank(self.G,
-                        constants.alpha, personalized,  )
+                        alpha, personalized, )
 
         if return_node_type is not None:
             if return_node_type == 'job':
@@ -223,6 +225,7 @@ class JobRecommender:
             elif return_node_type == 'employer':
                 ranked_nodes = {key:value for key, value in ranked_nodes.items() if ':' not in key and 'candidate' not in key}
 
-        ranked_nodes = {key:value for key, value in sorted(ranked_nodes.items(), key = lambda x: x[1], reverse = True)}
-
-        return ranked_nodes
+        # only return the context nodes
+        returned_nodes = {key:ranked_nodes[key] for key in context_nodes if key in ranked_nodes.keys()}
+        returned_nodes = {key:value for key, value in sorted(returned_nodes.items(), key = lambda x: x[1], reverse = True)}
+        return returned_nodes
