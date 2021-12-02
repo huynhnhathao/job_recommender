@@ -2,6 +2,12 @@
 
 *Attention: Do not mind the `Julia` language on the right, I don't use the Julia language in this project, it's the jsonline file extension `.jl`(jsonline is just like json but each line is a json object.) that makes GitHub think I used Julia. This project is written in Python.*
 
+[The Ultimate Jobs Recommender · Streamlit](https://share.streamlit.io/huynhnhathao/job_recommender/main/recommender/core/my_web_app.py)
+
+This is how it looks like:
+
+![image-20211202133506002](README.assets/image-20211202133506002.png)
+
 ## Abstract
 
 In this project, we will implement a Recommender system from scratch using Python. We will crawl data from a job seeking website using [Scrapy](https://scrapy.org/), store it into a Pandas DataFrame, then we'll build a graph network to express different entities and relations between them using [Networkx](https://networkx.org/documentation/stable/index.html). Then we'll use Personalized PageRank algorithm to recommend personalized jobs to a new user. Finally, we'll build a demo using [Streamlit]([Streamlit • The fastest way to build and share data apps](https://streamlit.io/)). 
