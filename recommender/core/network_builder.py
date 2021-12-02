@@ -12,9 +12,8 @@ import networkx as nx
 
 from sklearn import neighbors
 from scipy.spatial import distance
-
-from recommender.core import latent_semantic_analysis
-from recommender.core import constants
+import latent_semantic_analysis
+import constants
 
 handler = logging.StreamHandler()
 formmater = logging.Formatter('%(asctime)s - %(message)s')
