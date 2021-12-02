@@ -74,12 +74,12 @@ elif page == 'Search':
     # does not provide any information, recommend the most
     # popular jobs in the network
     if jrec.target_node is None:
-        st.markdown("**Those are the most popular jobs in our network.**")
-        st.json(jrec.rank_nodes(personalized = False,
-                target_node = jrec.target_node,
-                return_node_type='job',
-                alpha = alpha))
-    # st.text(jrec.target_node)
+        # st.markdown("**Those are the most popular jobs in our network.**")
+        # st.json(jrec.rank_nodes(personalized = False,
+        #         target_node = jrec.target_node,
+        #         return_node_type='job',
+        #         alpha = alpha))
+        st.text("Please enter your information in Your Information first")
     else:    
         search_keywords = st.text_input('Search', placeholder='Keywords skill (Solidity, Python), Job title, ...')
         if len(search_keywords) > 3:
