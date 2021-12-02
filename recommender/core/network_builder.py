@@ -4,7 +4,7 @@ import os
 import pickle
 import string
 import sys
-sys.path.append(r'C:\Users\huynhhao\Desktop\job_recommender')
+# sys.path.append(r'C:\Users\huynhhao\Desktop\job_recommender')
 
 import numpy as np
 import pandas as pd

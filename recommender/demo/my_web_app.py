@@ -1,8 +1,8 @@
 import sys
 import pickle
 import time
-sys.path.append(r'C:\Users\huynhhao\Desktop\job_recommender')
-sys.path.append(r'C:\Users\huynhhao\Desktop\job_recommender\recommender\core')
+# sys.path.append(r'C:\Users\huynhhao\Desktop\job_recommender')
+# sys.path.append(r'C:\Users\huynhhao\Desktop\job_recommender\recommender\core')
 
 import streamlit as st
 import pandas as pd
@@ -25,8 +25,8 @@ st.sidebar.markdown("""The larger the damping probability, the more personalized
 
 @st.cache(allow_output_mutation  = True)
 def load_recommender():
-    graphpath = r'C:\Users\huynhhao\Desktop\job_recommender\data\network_data\graph.pkl'
-    lsapath = r'C:\Users\huynhhao\Desktop\job_recommender\data\network_data\lsa.pkl'
+    graphpath =  'data/network_data/graph.pkl'
+    lsapath = 'data/network_data/lsa.pkl'
     with open(graphpath, 'rb') as f:
         G = pickle.load(f)
 
