@@ -6,7 +6,7 @@
 
 This is how it looks like:
 
-![image-20211202133506002](README.assets/image-20211202133506002.png)
+![jrec_demo](README.assets/jrec_demo-16385229872021.gif)
 
 ## Abstract
 
