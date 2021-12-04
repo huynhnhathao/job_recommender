@@ -32,7 +32,7 @@ These two dataframes are still not enough, we need data about previous candidate
 
 ![image-20211130113310629](README.assets/image-20211130113310629.png)
 
-We have more than 900 resumes, those resumes will plays as a candidate node in our job recommender network.
+We have more than 900 resumes, those resumes will play as a candidate node in our job recommender network.
 
 ## Step number 2: Build the network
 
