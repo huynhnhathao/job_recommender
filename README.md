@@ -10,7 +10,7 @@ This is how it looks like:
 
 ## Abstract
 
-In this project, we will implement a Recommender system from scratch using Python. We will crawl data from a job seeking website using [Scrapy](https://scrapy.org/), store it into a Pandas DataFrame, then we'll build a graph network to express different entities and relations between them using [Networkx](https://networkx.org/documentation/stable/index.html). Then we'll use Personalized PageRank algorithm to recommend personalized jobs to a new user. Finally, we'll build a demo using [Streamlit • The fastest way to build and share data apps](https://streamlit.io/). 
+In this project, we will implement a Recommender system from scratch using Python. We will crawl data from a job seeking website using [Scrapy](https://scrapy.org/), store it into Pandas DataFrames, then we'll build a graph network to express different entities and relations between them using [Networkx](https://networkx.org/documentation/stable/index.html). Then we'll use Personalized PageRank algorithm to recommend personalized jobs to a new user. Finally, we'll build a demo using [Streamlit • The fastest way to build and share data apps](https://streamlit.io/). 
 
 ## Problem Definition
 
