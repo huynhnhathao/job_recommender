@@ -10,7 +10,7 @@ This is how it looks like:
 
 ## Abstract
 
-In this project, we will implement a Recommender system from scratch using Python. We will crawl data from a job seeking website using [Scrapy](https://scrapy.org/), store it into a Pandas DataFrame, then we'll build a graph network to express different entities and relations between them using [Networkx](https://networkx.org/documentation/stable/index.html). Then we'll use Personalized PageRank algorithm to recommend personalized jobs to a new user. Finally, we'll build a demo using [Streamlit]([Streamlit • The fastest way to build and share data apps](https://streamlit.io/)). 
+In this project, we will implement a Recommender system from scratch using Python. We will crawl data from a job seeking website using [Scrapy](https://scrapy.org/), store it into Pandas DataFrames, then we'll build a graph network to express different entities and relations between them using [Networkx](https://networkx.org/documentation/stable/index.html). Then we'll use Personalized PageRank algorithm to recommend personalized jobs to a new user. Finally, we'll build a demo using [Streamlit • The fastest way to build and share data apps](https://streamlit.io/). 
 
 ## Problem Definition
 
@@ -32,7 +32,7 @@ These two dataframes are still not enough, we need data about previous candidate
 
 ![image-20211130113310629](README.assets/image-20211130113310629.png)
 
-We have more than 900 resumes, those resumes will plays as a candidate node in our job recommender network.
+We have more than 900 resumes, those resumes will play as candidates node in our job recommender network.
 
 ## Step number 2: Build the network
 
@@ -91,10 +91,10 @@ In this section, I will attempt to explain the Personalized PageRank algorithm's
 
 ## PageRank algorithm
 
-Imagine a random walker who randomly visit websites to websites, the next website this random walker is going to visit depends on whether it is linked in the current website. In this model, websites are nodes and links are edges, if a website point to another website by citing it, there will has an edge between the citing website to the cited website. Now imagine that the random walker will walk a billion times(or approach infinity), then we count the number of times he visit each node in the network. **The rank of a node** is the normalized number of times that random walker visit that node. We can obtain the probability of a random walker visit a node by divide the number of times he visit that node to all of his visiting times. We need two modification for this model to work:
+Imagine a random walker who randomly visit websites to websites, the next website this random walker is going to visit depends on whether it is linked in the current website. In this model, websites are nodes and links are edges, if a website point to another website by citing it, there will has an edge between the citing website to the cited website. Now imagine that the random walker will walk a billion times(or approach infinity), then we count the number of times he visit each node in the network. **The rank of a node** is the normalized number of times that random walker visit that node. We can obtain the probability of a random walker visit a node by divide the number of times he visit that node to all of his visiting times. We need two modifications for this model to work:
 
 - If a node does not link to any one, then it is called a dead end, we have to point that node to all the node in the network including itself, then the probability of moving from that node to other node is $\frac{1}{n}$, because all the nodes in the network have equally chance of being visited by the random walker when he is in that node.
-- If a group of node is isolated and does not has any link out of that group, then it is called a dead end component. If the random walker fall into this component, he will never see light again, as a result, all the probability will concentrate into that group. To prevent that, we need to define a teleportation probability to any other node in the network. At each transition, the random surfer may either jump to an arbitrary page with probability α, or follow one of the links on the page with probability (1 − α). $\alpha$ is also known as damping probability.
+- If a group of nodes is isolated and does not has any link out of that group, then it is called a dead end component. If the random walker fall into this component, he will never see light again, as a result, all the probability will concentrate into that group. To prevent that, we need to define a teleportation probability to any other node in the network. At each transition, the random surfer may either jump to an arbitrary page with probability α, or follow one of the links on the page with probability (1 − α). $\alpha$ is also known as damping probability.
 
 That's it for the ideas of the PageRank algorithm.
 
