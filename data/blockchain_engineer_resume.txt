@@ -1,0 +1,51 @@
+
+    Software engineer possessing Comprehensive 8 years of experience as IT Professional
+    5+ years of experience as Java Developer
+    2+ years of exclusive experience as Blockchain Developer
+    3+ years of research experience pursuing part time PhD in computer science on Cloud Security with Blockchain
+    Experience working in an Agile development and SDLC environment
+    Experience in developing and implementing applications on Ethereum Blockchain.
+    Hands - on experience developing web-based applications with Core Java and J2EE in specific with Struts and Hibernate frameworks
+    Strong knowledge on Cryptography which includes Encryption and Decryption using symmetric and asymmetric algorithms, hash functions and Digital Signatures
+    Deploying contracts and run tests on on personal ethereum Blockchain Ganache.
+    Experience in working with Databases like Oracle, SQL Server, SAP HANA, MongoDB and proficiency in writing SQL queries.
+    Proficient with HTML5, CSS3, Java Script, jQuery, AJAX, JSON and Bootstrap
+    Knowledge on Blockchain platform R3 CORDA and ERC20 Tokens
+    Knowledge on Blockchain technology, Ethereum Blockchain, various consensus protocols (Proof-of-Work & Proof-of-Stake) and cryptocurrencies
+    Knowledge on implementing Zero-Knowledge proof (ZKP) protocol in Blockchain
+    Experience on JavaScript frameworks such as AngularJS, ReactJS and NodeJS
+    Proficient in developing ethereum smart contracts with contract-oriented scripting language Solidity.
+    Building and testing applications with Truffle framework
+    Experience in building DApps using HTML, Java Script and Node.js and interact with Ethereum Blockchain by using Web3 JS API and metamask.
+    Installing and configuring lite-server to execute DApps
+    Experience working with Mist DApp browser and developing smart contracts using REMIX.
+    Hands-on experience on Decentralized cloud storage like Storj and Sia
+    Knowledge on Cloud computing, virtualization and cloud security
+    Experience UNIX platform, UNIX Commands and Scripting
+    Hands on experience with build tools like ANT, Maven and logging tools like Log4J
+    Possess excellent communication skills, work ethics and the ability to work well in a team or individual environment.
+    Exposure to work in a virtual team and work in remote network.
+
+TECHNICAL SKILLS:
+
+Blockchain: DApps, Solidity, Web3.js, Truffle, Ethereum, Mist, Metamask, Remix IDE,Cryptocurrencies
+
+Cryptography: Public key encryption, private key encryption, Hashing, Digital Signature
+
+Programming Languages: Java, J2EE
+
+Frameworks: Struts, JSF, Hibernate
+
+Web Technologies: HTML5, CSS3, Java Script, XML, AJAX, JSON, Node JS, React JS
+
+Web/Application Servers: Apache Tomcat, GlassFish, WebSphere
+
+Database: Oracle 9 & 10g, SAP Hana, PL/SQL
+
+Operating Systems: Windows XP/2000, UNIX.
+
+Modeling Tools: Power Designer, ARIS
+
+Version Control: VSS, CVS, GIT
+
+IDE: Eclipse, NetBeans, Dream Weaver, Visual Studio Code, Atom

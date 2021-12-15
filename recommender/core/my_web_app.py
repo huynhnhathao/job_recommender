@@ -17,7 +17,8 @@ st.set_page_config(page_title='The Ultimate Jobs Recommender', page_icon=None,
 
 st.header('The Ultimate Jobs Recommender')
 st.sidebar.markdown("""### [How does this work?](https://github.com/huynhnhathao/job_recommender)""")
-page = st.sidebar.radio('Choose Your Page', options=['Your Information', 'Search'], index = 0)
+page = st.sidebar.radio('Choose Your Page',
+    options=['Your Information','Recommended for you', 'Search'], index = 0)
 
 alpha = st.sidebar.slider('Damping Probability', min_value=0., max_value=1., value=0.5, step=0.1)
 st.sidebar.markdown("""The larger the damping probability, the more personalized the results are to you. 
@@ -38,12 +39,12 @@ def load_recommender():
     return jrec
 
 all_expertises = ['Java Developer', 'Testing', 'DevOps Engineer', 'Python Developer',
-       'Web Designing', 'HR', 'Hadoop', 'Blockchain', 'ETL Developer',
-       'Operations Manager', 'Data Science', 'Sales', 'Mechanical Engineer',
-       'Arts', 'Database', 'Electrical Engineering', 'Health and fitness',
-       'PMO', 'Business Analyst', 'DotNet Developer', 'Automation Testing',
+       'Web Designing', 'Hadoop', 'Blockchain', 'ETL Developer',
+       'Operations Manager', 'Data Science', 'Mechanical Engineer',
+        'Database', 
+        'Business Analyst', 'DotNet Developer', 'Automation Testing',
        'Network Security Engineer', 'SAP Developer', 'Civil Engineer',
-       'Advocate']
+       ]
 
 # start = time.time()
 # end = time.time()
@@ -68,6 +69,45 @@ if page == 'Your Information':
     user_data['resume'] = user_resume
     if len(user_data['resume']) > 100:
         jrec.add_node_to_graph('candidate', user_data)
+
+elif page == 'Recommended for you':
+    num_recommend = 30
+    personalized_results = jrec.rank_nodes(True, jrec.target_node, 'job', alpha)
+    personalized_results = {key:item for i, (key,item) in enumerate(personalized_results.items()) if i < num_recommend}     
+    c1, c2, c3, c4, c5 = True, False, False, False, False
+    col1, col2, col3, col4, col5 = st.columns(5)
+    st.markdown(f"Most {num_recommend} relevant jobs for you.")
+    for key, value in personalized_results.items():
+        job_node = jrec.G.nodes[key]
+        company_id = job_node['company_id']
+        logo = jrec.G.nodes[company_id]['logo_link']
+        
+        if c1:                
+            with col1:
+                st.image(logo, caption = job_node['job_name'], width=60, use_column_width = 'always' )
+                c1, c2, c3, c4, c5 = False, True, False, False, False
+                continue
+        elif c2:
+            with col2:
+                st.image(logo, caption = job_node['job_name'], width=60, use_column_width = 'always' )
+                c1, c2, c3, c4, c5 = False, False, True, False, False
+                continue
+        elif c3:
+            with col3:
+                st.image(logo, caption = job_node['job_name'], width=60, use_column_width = 'always' )
+                c1, c2, c3, c4, c5 = False, False, False, True, False
+                continue
+
+        elif c4:
+            with col4:
+                st.image(logo, caption = job_node['job_name'], width=60, use_column_width = 'always' )
+                c1, c2, c3, c4, c5 = False, False, False, False, True
+                continue
+        elif c5:
+            with col5:
+                st.image(logo, caption = job_node['job_name'], width=60, use_column_width = 'always' )
+                c1, c2, c3, c4, c5 = True, False, False, False, False
+                continue
 
 elif page == 'Search':
     # if no node has added to the network, means user

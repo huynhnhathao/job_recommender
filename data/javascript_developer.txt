@@ -1,0 +1,16 @@
+round 5 years of experience on Cross Platform Web/Client-Server applications design and development using Java, J2EE and application server technologies.
+Expertise in Core Java concepts such as Multi-Threading, Generics, Exception Handling, Collections Framework, etc.
+Strong front-end UI development skills using scripting languages like HTML5, CSS3, JavaScript, JQuery, AJAX, JSON, Ext Js, Angular Js, DOM, JSP, JQuery Plug-ins.
+Expertise in Advanced JavaScript libraries and frameworks such as Prototype, Ext Js, Angular Js, and Object oriented programing in JS.
+Extensive experience in Cross-browser HTML, CSS JavaScript coding to offer responsive website layouts to modern browsers and mobile devices.
+Extensive experience with CSS3 and leveraging best practices, modifications of existing CSS files to enhance the user experience.
+Intermediate experience with Advanced JavaScript including prototype-based inheritance, AJAX, JSON and familiar with JavaScript frameworks such as, JQuery and JQuery-UI.
+Experience in major web applications servers, including Apache Tomcat, Jboss and WebLogic.
+Deep understanding in design, development and implementation of Model-View-Controller frame works using Struts and Spring MVC.
+Experience in J2EE Software Development Life Cycle SDLC of Business applications in web and client-server environment with JSP, Servlet, AJAX, JDBC, XML, JavaMail, Log4j and Web Services like Soap and Restful.
+Strong experience with Oracle, PL/SQL, MySQL, SQL Server concepts.
+Expertise in DB Design, DB normalization and writing SQL queries PL/SQL- Stored Procedures, Functions, Triggers, Sequences, Indexes and Views, etc.
+Good knowledge in design understanding the application using UML Data flow diagrams.
+Performed unit testing using JUnit test cases, Integration and deployment of applications using build tools like ANT and Maven and debugging through log4j.
+Worked on multiple domains like Financial, Travel, and Health care industries.
+Worked in Scrum, an Agile methodology for software development.
