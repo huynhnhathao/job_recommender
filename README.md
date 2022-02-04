@@ -14,7 +14,7 @@ In this project, we will implement a Recommender system from scratch using Pytho
 
 ## Problem Definition
 
-Consider a scenario in which a candidate access to a job seeking website and she want to find a few good relevant jobs out of thousand of available jobs and employers. She tell the  recommender system(RS) her expertise and resume, then she proceed to enter a keyword(Blockchain Engineer, for example), out of hundred of  jobs has the same title Blockchain Engineer, how the RS rank and order most relevant jobs to suggest to the candidate such that it takes into account the candidate's resume, expertise and the searched keyword?
+Consider a scenario in which a candidate access to a job seeking website and she want to find a few good relevant jobs out of thousand of available jobs and employers. She tells the  recommender system(RS) her expertise and resume, then she proceeds to enter a keyword(Blockchain Engineer, for example), out of hundred of  jobs has the same title Blockchain Engineer, how the RS rank and order most relevant jobs to suggest to the candidate such that it takes into account the candidate's resume, expertise and the searched keyword?
 
 ## Step number 1: Crawl data
 
